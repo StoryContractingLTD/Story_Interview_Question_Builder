@@ -1,0 +1,3229 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Story Interview Question Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#0061ad;
+  --blue-dark:#004b86;
+  --blue-tint:#e6f0f8;
+  --blue-tint2:#f4f9fc;
+  --teal:#01a4ab;
+  --amber:#e8a00e;
+  --green:#75b12c;
+  --orange:#f49700;
+  --grey:#60666d;
+  --filler:#dee0e1;
+  --ink:#22262a;
+  --white:#fff;
+  --radius:6px;
+  --shadow:0 2px 6px rgba(0,0,0,.10);
+  --head:'Montserrat','Segoe UI',Arial,Helvetica,sans-serif;
+  --body:Arial,Helvetica,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;font-family:var(--body);color:var(--ink);background:#f2f4f6;
+  font-size:17px;line-height:1.6;
+}
+h1,h2,h3,h4{font-family:var(--head);font-weight:600;line-height:1.25;margin:0 0 .5em}
+p{margin:0 0 1em}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.skip{position:absolute;left:-9999px;top:0;background:var(--white);color:var(--blue);padding:12px 18px;z-index:100;font-weight:bold}
+.skip:focus{left:8px;top:8px}
+
+/* ---------- Brand bar ---------- */
+.topbar{background:var(--blue);color:var(--white);position:relative}
+.topbar-in{max-width:1100px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.logo{height:34px;width:auto;display:block}
+.topbar .title{font-family:var(--head);font-weight:600;font-size:1.05rem;letter-spacing:.01em}
+.topbar .title span{display:block;font-family:var(--body);font-weight:normal;font-size:.8rem;opacity:.9}
+.wedge{height:14px;background:var(--blue);position:relative;overflow:hidden}
+.wedge::after{content:"";position:absolute;inset:0;background:#f2f4f6;clip-path:polygon(0 100%,100% 0,100% 100%)}
+
+/* ---------- Layout ---------- */
+.wrap{max-width:1100px;margin:0 auto;padding:24px 20px 140px}
+.card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;margin-bottom:20px}
+.lead{font-size:1.05rem;color:var(--grey);max-width:62ch}
+
+/* ---------- Steps ---------- */
+.steps{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 22px;padding:0;list-style:none}
+.steps li{flex:1 1 200px;background:var(--white);border-radius:var(--radius);padding:10px 14px;border-left:5px solid var(--filler);font-size:.9rem;color:var(--grey);box-shadow:var(--shadow)}
+.steps li strong{display:block;font-family:var(--head);color:var(--ink);font-size:.95rem}
+.steps li[aria-current="step"]{border-left-color:var(--blue);background:var(--blue-tint)}
+.steps li[aria-current="step"] strong{color:var(--blue-dark)}
+.steps li.done{border-left-color:var(--green)}
+
+/* ---------- Level cards ---------- */
+.levels{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:20px}
+.level-btn{
+  text-align:left;font:inherit;background:var(--white);border:2px solid var(--filler);
+  border-radius:var(--radius);padding:20px;cursor:pointer;display:flex;flex-direction:column;gap:6px;
+  transition:border-color .15s,box-shadow .15s,transform .15s;box-shadow:var(--shadow);min-height:100%;
+}
+.level-btn:hover{border-color:var(--blue);transform:translateY(-2px)}
+.level-btn .lv{font-family:var(--head);font-weight:600;font-size:1.15rem;color:var(--blue-dark)}
+.level-btn .bl{font-size:.92rem;color:var(--grey)}
+.level-btn .cnt{font-size:.82rem;color:var(--blue);font-weight:bold;margin-top:auto;padding-top:8px}
+.level-btn .arrow{position:absolute}
+
+/* ---------- Tabs ---------- */
+.tabs{display:flex;gap:4px;border-bottom:3px solid var(--filler);margin:0 0 20px;flex-wrap:wrap}
+.tab{font:inherit;font-family:var(--head);font-weight:600;background:none;border:none;border-bottom:4px solid transparent;
+  margin-bottom:-3px;padding:12px 18px;cursor:pointer;color:var(--grey);font-size:1rem;border-radius:4px 4px 0 0}
+.tab[aria-selected="true"]{color:var(--blue-dark);border-bottom-color:var(--blue);background:var(--blue-tint)}
+.tab .pill{display:inline-block;min-width:22px;padding:0 6px;margin-left:8px;border-radius:11px;background:var(--filler);color:var(--ink);font-size:.78rem;line-height:22px;text-align:center;font-family:var(--body)}
+.tab[aria-selected="true"] .pill{background:var(--blue);color:#fff}
+
+/* ---------- Question groups ---------- */
+.group{border:1px solid var(--filler);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;background:var(--white)}
+.group-head{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;font:inherit;background:var(--blue-tint2);
+  border:none;border-left:6px solid var(--blue);padding:14px 16px;cursor:pointer}
+.group-head:hover{background:var(--blue-tint)}
+.group.is-values .group-head{border-left-color:var(--teal)}
+.group-head .chev{flex:0 0 auto;width:22px;height:22px;margin-top:2px;transition:transform .2s;color:var(--blue)}
+.group[open] .group-head .chev,.group.open .group-head .chev{transform:rotate(90deg)}
+.group-head .gname{font-family:var(--head);font-weight:600;font-size:1.05rem;color:var(--blue-dark);display:block}
+.group.is-values .group-head .gname{color:#046b70}
+.group-head .gdesc{font-size:.88rem;color:var(--grey);display:block;margin-top:2px;max-width:78ch}
+.group-head .gcount{margin-left:auto;flex:0 0 auto;font-size:.82rem;font-weight:bold;color:var(--white);background:var(--grey);
+  border-radius:12px;padding:2px 10px;white-space:nowrap}
+.group-head .gcount.has{background:var(--green)}
+.group-body{padding:8px 16px 16px;display:none}
+.group.open .group-body{display:block}
+.group-tools{display:flex;gap:10px;flex-wrap:wrap;padding:6px 0 10px;border-bottom:1px dashed var(--filler);margin-bottom:8px}
+.linkbtn{font:inherit;font-size:.85rem;background:none;border:none;color:var(--blue);text-decoration:underline;cursor:pointer;padding:4px 2px}
+.linkbtn:hover{color:var(--blue-dark)}
+
+.q{display:flex;gap:12px;padding:12px 10px;border-radius:4px;align-items:flex-start;cursor:pointer;border:2px solid transparent}
+.q:hover{background:var(--blue-tint2)}
+.q input{flex:0 0 auto;width:22px;height:22px;margin:2px 0 0;accent-color:var(--blue);cursor:pointer}
+.q.checked{background:var(--blue-tint);border-color:#b6d4e9}
+.q .qt{font-size:1rem;flex:1 1 auto;min-width:0}
+.qmain{display:block}
+/* ---------- Probes ---------- */
+.probeblock{margin:8px 0 0;padding:8px 0 6px 12px;border-left:3px solid var(--amber);background:#fdf8ec;border-radius:0 4px 4px 0}
+.probelabel{display:block;font-family:var(--head);font-weight:700;font-size:.7rem;letter-spacing:.09em;
+  text-transform:uppercase;color:#8a5e00;margin-bottom:3px}
+.probes{margin:0;padding:0;list-style:none;font-size:.92rem;color:var(--grey)}
+.probes li{margin:0 0 3px;padding-left:18px;position:relative}
+.probes li::before{content:"\21B3";position:absolute;left:0;top:-1px;color:var(--amber);font-weight:bold}
+.probes li:last-child{margin-bottom:0}
+.q .probeblock{margin-right:6px}
+
+/* ---------- Sticky action bar ---------- */
+.actionbar{position:fixed;left:0;right:0;bottom:0;background:var(--white);border-top:4px solid var(--blue);
+  box-shadow:0 -3px 12px rgba(0,0,0,.14);z-index:40}
+.actionbar-in{max-width:1100px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.tally{font-family:var(--head);font-weight:600;color:var(--blue-dark);font-size:1rem}
+.tally small{display:block;font-family:var(--body);font-weight:normal;color:var(--grey);font-size:.82rem}
+.spacer{margin-left:auto}
+.btn{font:inherit;font-family:var(--head);font-weight:600;border:2px solid var(--blue);background:var(--blue);color:var(--white);
+  padding:11px 22px;border-radius:var(--radius);cursor:pointer;font-size:1rem}
+.btn:hover{background:var(--blue-dark);border-color:var(--blue-dark)}
+.btn[disabled]{background:var(--filler);border-color:var(--filler);color:#7a8087;cursor:not-allowed}
+.btn.ghost{background:var(--white);color:var(--blue)}
+.btn.ghost:hover{background:var(--blue-tint);color:var(--blue-dark)}
+.btn.small{padding:8px 14px;font-size:.9rem}
+
+/* ---------- Notices ---------- */
+.note{background:var(--blue-tint);border-left:5px solid var(--blue);padding:14px 16px;border-radius:0 var(--radius) var(--radius) 0;margin:0 0 20px;font-size:.95rem}
+.note h3{font-size:1rem;margin-bottom:.3em;color:var(--blue-dark)}
+.note ul{margin:.3em 0 0;padding-left:20px}
+.note.star{border-left-color:var(--green);background:#f1f8e8}
+.note.star h3{color:#4a7a10}
+
+/* ---------- Interview sheet ---------- */
+.sheet{background:var(--white);box-shadow:var(--shadow);border-radius:var(--radius);padding:0;overflow:hidden}
+.sheet-head{background:var(--blue);color:var(--white);padding:18px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.sheet-head h2{margin:0;color:var(--white);font-size:1.3rem}
+.sheet-head .lvtag{margin-left:auto;background:var(--white);color:var(--blue-dark);font-family:var(--head);font-weight:600;
+  padding:5px 14px;border-radius:14px;font-size:.9rem}
+.sheet-body{padding:24px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:22px}
+.field label{display:block;font-family:var(--head);font-weight:600;font-size:.85rem;color:var(--grey);margin-bottom:4px;text-transform:uppercase;letter-spacing:.03em}
+.field input{width:100%;font:inherit;padding:9px 11px;border:1px solid #b9bec4;border-radius:4px;background:#fcfdfe}
+.field input:focus{border-color:var(--blue)}
+
+.qblock{border:1px solid var(--filler);border-radius:var(--radius);margin-bottom:16px;break-inside:avoid;page-break-inside:avoid}
+.qblock-head{background:var(--blue-tint2);border-bottom:1px solid var(--filler);border-left:6px solid var(--blue);padding:12px 16px}
+.qblock.is-values .qblock-head{border-left-color:var(--teal)}
+.qblock .tagrow{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;font-family:var(--head);font-weight:600;color:var(--blue);margin-bottom:4px}
+.qblock.is-values .tagrow{color:#046b70}
+.qblock .qnum{color:var(--grey)}
+.qblock .qtext{font-size:1.05rem;font-family:var(--head);font-weight:600;line-height:1.4}
+.qblock-body{padding:14px 16px}
+.notes-label{font-family:var(--head);font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;color:var(--grey);margin-bottom:5px}
+.notes{min-height:196px;border:1px solid #b9bec4;border-radius:4px;padding:8px 11px;background:
+  repeating-linear-gradient(#fcfdfe,#fcfdfe 27px,#e7eaed 27px,#e7eaed 28px);line-height:28px;font-size:1rem}
+.notes:focus{border-color:var(--blue);background:#fff}
+.notes:empty::before{content:attr(data-ph);color:#9aa0a6}
+.notes.big{min-height:252px}
+/* Notes space: 5 / 7 / 10 ruled lines at 28px on screen, 26px in print */
+.sheet[data-notes="m"] .notes{min-height:140px}
+.sheet[data-notes="m"] .notes.big{min-height:196px}
+.sheet[data-notes="xl"] .notes{min-height:280px}
+.sheet[data-notes="xl"] .notes.big{min-height:336px}
+
+/* Notes space picker */
+.sizer{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px dashed var(--filler)}
+.sizer .slabel{font-family:var(--head);font-weight:600;font-size:.85rem;color:var(--grey)}
+.sizer fieldset{border:none;margin:0;padding:0;display:flex;gap:0;position:relative;border-radius:var(--radius);overflow:hidden;border:2px solid var(--blue)}
+.sizer legend{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.sizer input{position:absolute;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none}
+.sizer label{font-family:var(--head);font-weight:600;font-size:.88rem;padding:7px 16px;cursor:pointer;background:var(--white);
+  color:var(--blue);border-right:1px solid var(--blue)}
+.sizer label:last-of-type{border-right:none}
+.sizer label:hover{background:var(--blue-tint)}
+.sizer input:checked + label{background:var(--blue);color:var(--white)}
+.sizer input:focus-visible + label{outline:3px solid var(--amber);outline-offset:-3px}
+.sizer .hint{font-size:.85rem;color:var(--grey)}
+
+.score{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.score .slabel{font-family:var(--head);font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;color:var(--grey)}
+.score fieldset{border:none;margin:0;padding:0;display:flex;gap:6px;position:relative}
+.score legend{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.score input{position:absolute;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;margin:0}
+.score label{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border:2px solid #b9bec4;
+  border-radius:50%;font-family:var(--head);font-weight:600;cursor:pointer;background:var(--white);font-size:.95rem;color:var(--grey)}
+.score label:hover{border-color:var(--blue)}
+.score input:checked + label{background:var(--blue);border-color:var(--blue);color:var(--white)}
+.score input:focus-visible + label{outline:3px solid var(--amber);outline-offset:2px}
+.score .key{font-size:.8rem;color:var(--grey)}
+
+.strapline{font-family:var(--head);font-style:italic;color:var(--blue);font-weight:600}
+.lvchip{display:inline-block;vertical-align:middle;background:var(--blue);color:var(--white);
+  font-family:var(--head);font-weight:600;font-size:1rem;padding:5px 16px;border-radius:16px;
+  margin-left:6px;position:relative;top:-2px}
+.footer{margin-top:26px;padding-top:16px;border-top:2px solid var(--filler);font-size:.85rem;color:var(--grey);display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.footer .safe{font-family:var(--head);font-weight:700;letter-spacing:.02em}
+.footer .safe .a{color:var(--green)}
+.footer .safe .b{color:var(--orange)}
+
+.hidden{display:none !important}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.empty{padding:26px;text-align:center;color:var(--grey)}
+
+@media (max-width:640px){
+  body{font-size:16px}
+  .wrap{padding:16px 14px 150px}
+  .card,.sheet-body{padding:16px}
+  .topbar .title{font-size:.95rem}
+  .steps li{flex:1 1 100%}
+  .actionbar-in{padding:10px 14px}
+  .btn{flex:1 1 auto;text-align:center}
+}
+
+/* ---------- Print ---------- */
+@media print{
+  @page{size:A4 portrait;margin:12mm 12mm 14mm}
+  html,body{background:#fff;font-size:11pt}
+  .noprint,.topbar,.wedge,.actionbar,.steps,.skip{display:none !important}
+  .wrap{max-width:none;padding:0;margin:0}
+  .sheet{box-shadow:none;border-radius:0}
+  .sheet-head{background:var(--blue) !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;padding:10px 14px}
+  .sheet-body{padding:12px 0 0}
+  .card{box-shadow:none;padding:0}
+  .qblock{border-color:#aab0b6}
+  .qblock-head{background:#f2f6fa !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;padding:8px 12px}
+  .qblock-body{padding:10px 12px}
+  .notes{min-height:182px;background:repeating-linear-gradient(#fff,#fff 25px,#dfe3e6 25px,#dfe3e6 26px) !important;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;line-height:26px}
+  .notes.big{min-height:234px}
+  .sheet[data-notes="m"] .notes{min-height:130px}
+  .sheet[data-notes="m"] .notes.big{min-height:182px}
+  .sheet[data-notes="xl"] .notes{min-height:260px}
+  .sheet[data-notes="xl"] .notes.big{min-height:312px}
+  .sizer{display:none !important}
+  .notes:empty::before{content:""}
+  .score input:checked + label{background:var(--blue) !important;color:#fff !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .field input{border:none;border-bottom:1px solid #666;border-radius:0;background:none;padding:2px 0}
+  .note.star{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .probeblock{background:#fdf8ec !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;
+    border-left-color:var(--amber) !important;padding:6px 0 5px 10px;margin-top:6px}
+  .probelabel{color:#7a5300 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .probes li::before{color:#b57d00 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .printonly{display:block !important}
+  a[href]:after{content:""}
+}
+.printonly{display:none}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+
+<header class="topbar noprint">
+  <div class="topbar-in">
+    <img class="logo" src="data:image/png;base64,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" alt="Story Contracting">
+    <div class="title">Interview Question Builder
+      <span>Behaviours &amp; values based interviewing</span>
+    </div>
+  </div>
+</header>
+<div class="wedge noprint" aria-hidden="true"></div>
+
+<main id="main" class="wrap">
+
+  <ol class="steps noprint" id="steps">
+    <li id="st1" aria-current="step"><strong>1. Choose the level</strong>Who are you interviewing?</li>
+    <li id="st2"><strong>2. Pick your questions</strong>By behaviour and value</li>
+    <li id="st3"><strong>3. Run the interview</strong>Type into it or print it</li>
+  </ol>
+
+  <!-- ============ STEP 1 ============ -->
+  <section id="step1" class="card" aria-labelledby="s1h">
+    <h1 id="s1h">What level are you interviewing?</h1>
+    <p class="lead">Pick the level that best matches the role. You&rsquo;ll then choose the questions you want from our behaviour framework and Story values, and the tool builds your interview sheet for you.</p>
+    <div class="levels" id="levelList"></div>
+    <div class="note" style="margin-top:24px">
+      <h3>New to behaviours based interviewing?</h3>
+      <p>Aim for <strong>6&ndash;10 questions</strong> in a one hour interview. Spread them across a few different behaviours and values rather than going deep on one, and use the same set for every candidate for the same role so you can compare fairly.</p>
+      <p style="margin:0">Some questions have <strong>probes</strong> attached, shown in an amber box marked <em>Probes if needed</em>. These are follow-ups you only ask if part of the answer is missing. They come with the question and don&rsquo;t count as extra questions.</p>
+    </div>
+  </section>
+
+  <!-- ============ STEP 2 ============ -->
+  <section id="step2" class="hidden" aria-labelledby="s2h">
+    <div class="card">
+      <h1 id="s2h">Pick your questions <span id="lvlName" class="lvchip"></span></h1>
+      <p class="lead" id="lvlBlurb"></p>
+      <p style="margin:0"><button type="button" class="linkbtn" id="changeLevel">&larr; Change level</button></p>
+    </div>
+
+    <div class="card">
+      <div class="tabs" role="tablist" aria-label="Question type">
+        <button class="tab" id="tab-beh" role="tab" aria-selected="true" aria-controls="panel-beh" type="button">Behaviours <span class="pill" id="pillBeh">0</span></button>
+        <button class="tab" id="tab-val" role="tab" aria-selected="false" aria-controls="panel-val" type="button">Story Values <span class="pill" id="pillVal">0</span></button>
+      </div>
+      <div id="panel-beh" role="tabpanel" aria-labelledby="tab-beh" tabindex="0"></div>
+      <div id="panel-val" role="tabpanel" aria-labelledby="tab-val" tabindex="0" class="hidden"></div>
+    </div>
+  </section>
+
+  <!-- ============ STEP 3 ============ -->
+  <section id="step3" class="hidden" aria-labelledby="s3h">
+    <div class="card noprint">
+      <h1 id="s3h">Your interview sheet is ready</h1>
+      <p class="lead">Type your notes and scores straight into the sheet below, or print it and write on it. Nothing is saved automatically, so <strong>print or save as PDF before you close this page.</strong></p>
+      <p style="margin:0"><button type="button" class="linkbtn" id="backToQs">&larr; Back to change the questions</button></p>
+
+      <div class="sizer">
+        <span class="slabel">Space for notes</span>
+        <fieldset id="sizeSet">
+          <legend>How much space for notes under each question</legend>
+          <input type="radio" name="notesize" id="ns-m" value="m"><label for="ns-m">Medium</label>
+          <input type="radio" name="notesize" id="ns-l" value="l" checked><label for="ns-l">Large</label>
+          <input type="radio" name="notesize" id="ns-xl" value="xl"><label for="ns-xl">Extra large</label>
+        </fieldset>
+        <span class="hint" id="sizeHint"></span>
+      </div>
+    </div>
+
+    <div class="sheet" id="sheet" data-notes="l">
+      <div class="sheet-head">
+        <img class="logo printonly" src="data:image/png;base64,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" alt="Story Contracting" style="height:28px">
+        <h2>Interview Record</h2>
+        <span class="lvtag" id="sheetLevel"></span>
+      </div>
+      <div class="sheet-body">
+        <div class="fields">
+          <div class="field"><label for="f-cand">Candidate</label><input id="f-cand" type="text" autocomplete="off"></div>
+          <div class="field"><label for="f-role">Role applied for</label><input id="f-role" type="text" autocomplete="off"></div>
+          <div class="field"><label for="f-date">Date</label><input id="f-date" type="text" autocomplete="off" placeholder="dd/mm/yyyy"></div>
+          <div class="field"><label for="f-panel">Interviewer(s)</label><input id="f-panel" type="text" autocomplete="off"></div>
+        </div>
+
+        <div class="note star">
+          <h3>Listen for a full STAR answer</h3>
+          <ul>
+            <li><strong>S</strong>ituation: where were they and what was going on?</li>
+            <li><strong>T</strong>ask: what did they need to do, and why was it on them?</li>
+            <li><strong>A</strong>ction: what did <em>they</em> actually do? Listen for &ldquo;I&rdquo;, not &ldquo;we&rdquo;.</li>
+            <li><strong>R</strong>esult: what happened, and what did they learn?</li>
+          </ul>
+          <p style="margin:.6em 0 0">The amber <strong>&ldquo;Probes if needed&rdquo;</strong> boxes are follow-ups, not questions in their own right. Only use them if part of the answer is missing. Give the candidate time to think; silence is fine.</p>
+        </div>
+
+        <div id="sheetQs"></div>
+
+        <div class="qblock" style="border-color:var(--blue)">
+          <div class="qblock-head" style="border-left-color:var(--amber)">
+            <div class="tagrow" style="color:var(--grey)">Overall</div>
+            <div class="qtext">Summary and recommendation</div>
+          </div>
+          <div class="qblock-body">
+            <div class="notes-label">Strengths: where did they evidence our behaviours and values?</div>
+            <div class="notes" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Strengths" data-ph="Type here&hellip;"></div>
+            <div class="notes-label" style="margin-top:14px">Gaps or concerns: anything to explore at the next stage?</div>
+            <div class="notes" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Gaps or concerns" data-ph="Type here&hellip;"></div>
+            <div class="notes-label" style="margin-top:14px">Overall comments and recommendation</div>
+            <div class="notes big" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Overall comments and recommendation" data-ph="Type here&hellip;"></div>
+            <div class="score">
+              <span class="slabel">Recommendation</span>
+              <fieldset id="recSet"><legend>Recommendation</legend></fieldset>
+            </div>
+            <div class="fields" style="margin-top:18px;margin-bottom:0">
+              <div class="field"><label for="f-sign">Signed</label><input id="f-sign" type="text" autocomplete="off"></div>
+              <div class="field"><label for="f-sdate">Date</label><input id="f-sdate" type="text" autocomplete="off"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <span class="safe"><span class="a">PLAN SAFE</span> : <span class="b">WORK SAFE</span></span>
+          <span class="spacer"></span>
+          <span>Keep this record with the candidate file in line with our recruitment and data retention policy.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ ACTION BAR ============ -->
+<div class="actionbar noprint hidden" id="actionbar">
+  <div class="actionbar-in">
+    <div class="tally" id="tally">0 questions selected<small id="tallySub">Aim for 6&ndash;10 across a few different areas</small></div>
+    <div class="spacer"></div>
+    <button type="button" class="btn ghost small" id="clearAll">Clear all</button>
+    <button type="button" class="btn" id="buildBtn" disabled>Build my interview sheet &rarr;</button>
+  </div>
+</div>
+<div class="actionbar noprint hidden" id="actionbar3">
+  <div class="actionbar-in">
+    <div class="tally" id="tally3">Interview sheet<small>Type into it, then print or save as PDF</small></div>
+    <div class="spacer"></div>
+    <button type="button" class="btn ghost small" id="startOver">Start again</button>
+    <button type="button" class="btn" id="printBtn">Print / Save as PDF</button>
+  </div>
+</div>
+
+<script>
+const DATA = {
+ "levels": [
+  {
+   "id": "frontline",
+   "label": "Front Line / Site Worker",
+   "blurb": "For operatives, site-based and front line colleagues.",
+   "behaviours": [
+    {
+     "name": "Safety Aware",
+     "desc": "Committed to continuously improve the physical and mental health safety and wellbeing of all colleagues.",
+     "questions": [
+      {
+       "q": "Tell us about a time when you challenged a colleague or line manager's unsafe behaviour.",
+       "probes": [
+        "What was the outcome?"
+       ]
+      },
+      {
+       "q": "Describe a safety improvement you have suggested or implemented on site.",
+       "probes": [
+        "If there have been a few, what was the most useful?"
+       ]
+      },
+      {
+       "q": "What do you see as your responsibility for creating a safe environment (this refers to physical and mental safety)?",
+       "probes": []
+      },
+      {
+       "q": "Describe a time when workload pressure was affecting you or a colleague.",
+       "probes": [
+        "How did you bring it up?",
+        "Who did you inform?",
+        "Did anything change as a result?"
+       ]
+      },
+      {
+       "q": "Tell us about a time when you identified a potential risk at work.",
+       "probes": [
+        "What did you do about it?",
+        "Who did you approach?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Credible",
+     "desc": "Grounded & approachable; no ego, open & self-aware. Takes responsibility for emotions and behaviours, committed to being best version of self.",
+     "questions": [
+      {
+       "q": "Tell us about a time you made a mistake at work.",
+       "probes": [
+        "What did you learn?",
+        "What would you do differently to make sure it didn't happen again?"
+       ]
+      },
+      {
+       "q": "Share a time when you received feedback that was hard to hear.",
+       "probes": [
+        "What was it about?",
+        "How did you respond?",
+        "What did you learn from it?"
+       ]
+      },
+      {
+       "q": "How do you stay calm and approachable during challenging situations?",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a time when your emotions or behaviour had a negative impact at work.",
+       "probes": [
+        "How did you recognise it and take responsibility?",
+        "What did you learn from the experience?"
+       ]
+      },
+      {
+       "q": "What does the best version of yourself look like in your day-to-day work?",
+       "probes": [
+        "What habits help you show up as the best version of yourself?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Engages & Motivates Others",
+     "desc": "Chooses appropriate communication to engage others in serving the company & shares information to enable them to do that effectively.",
+     "questions": [
+      {
+       "q": "How do you make sure instructions are clear when you're working with different people on site, especially if someone is new or unsure?",
+       "probes": []
+      },
+      {
+       "q": "Give us an example of when you helped improve teamwork or cooperation on site.",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a time you've had to adjust your communication style to get your message across.",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a time when you had to help motivate colleagues, for example when morale was low or when pressures or deadlines were challenging.",
+       "probes": [
+        "What did you do?"
+       ]
+      },
+      {
+       "q": "How do you ensure that you maintain good working relationships with your colleagues?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Develops Others",
+     "desc": "Seeks out, nurtures & recognises talent, empowers others to be the best they can, practises coaching & provides opportunities for development.",
+     "questions": [
+      {
+       "q": "How do you balance letting someone junior or less experienced try a task with keeping the job safe and on time?",
+       "probes": []
+      },
+      {
+       "q": "Describe how you give recognition or feedback day-to-day.",
+       "probes": []
+      },
+      {
+       "q": "How do you share your skills and knowledge with your colleagues?",
+       "probes": []
+      },
+      {
+       "q": "Tell us about onboarding or training you've provided to a new colleague (e.g. systems, templates or ways of working).",
+       "probes": []
+      },
+      {
+       "q": "Describe a time when you learned a new skill and passed on this knowledge to your colleagues.",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Inclusive",
+     "desc": "Recognises the value of diversity to the business, seeks, enables, promotes & uses the opinions and ideas of others.",
+     "questions": [
+      {
+       "q": "Have you ever challenged behaviour that could exclude someone?",
+       "probes": [
+        "What did you do?"
+       ]
+      },
+      {
+       "q": "Tell us about a time you worked with someone very different to you.",
+       "probes": [
+        "How did you make it work?"
+       ]
+      },
+      {
+       "q": "How do you ensure everyone feels comfortable to contribute in meetings you co-ordinate?",
+       "probes": []
+      },
+      {
+       "q": "Give us an example of when you noticed someone being left out of a discussion or decision.",
+       "probes": [
+        "What did you do?",
+        "What was the outcome?"
+       ]
+      },
+      {
+       "q": "You notice a colleague rarely contributes to team meetings. How would you encourage them to contribute their ideas?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Collaborative",
+     "desc": "Shows respect for & is interested in others, is open to & appreciates their contribution, seeks a win:win outcome and says what needs to be said, even if it’s difficult.",
+     "questions": [
+      {
+       "q": "Give us an example of a time when you worked closely with other team members on site to solve a problem.",
+       "probes": [
+        "How did you show respect for their experience or opinions?"
+       ]
+      },
+      {
+       "q": "Tell us about a time you had a difficult conversation with a teammate or subcontractor.",
+       "probes": [
+        "How did you approach it?"
+       ]
+      },
+      {
+       "q": "Tell us about a time you worked with others to solve a problem or resolve a disagreement.",
+       "probes": [
+        "What was the outcome?"
+       ]
+      },
+      {
+       "q": "Give us an example of when you stepped in to help a teammate meet a deadline without compromising standards.",
+       "probes": []
+      },
+      {
+       "q": "Describe a situation when you and a colleague had different ideas about how to approach a task.",
+       "probes": [
+        "How did you work together to find a solution that worked?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Visionary/Pioneering",
+     "desc": "Looks and strives for a brighter future, willing to take risks and show courage to get there, willing to change the game.",
+     "questions": [
+      {
+       "q": "What emerging methods or kit are you keen to try and why?",
+       "probes": []
+      },
+      {
+       "q": "What’s a better way you’ve introduced (e.g. tool, method or sequencing) that improved safety or productivity?",
+       "probes": []
+      },
+      {
+       "q": "Describe a time when you challenged existing ways of working.",
+       "probes": [
+        "How did you present your ideas?"
+       ]
+      },
+      {
+       "q": "Tell us about a time you suggested a new way of working, tool or process that made things better.",
+       "probes": []
+      },
+      {
+       "q": "If we were in an ideal world, how would you redesign or improve the way we work?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Thinks and Acts Commercially",
+     "desc": "Is interested in and understands the whole business & how well it serves the client, constantly strives to do business in an effective and efficient way.",
+     "questions": [
+      {
+       "q": "Give us an example of when you saved time or materials without compromising safety/quality.",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a time you spotted something that could increase costs or cause a delay. What did you do?",
+       "probes": [
+        "What was the outcome?"
+       ]
+      },
+      {
+       "q": "How do you keep the customer or client in mind when doing your work?",
+       "probes": []
+      },
+      {
+       "q": "How do you prioritise tasks when everything feels urgent?",
+       "probes": []
+      },
+      {
+       "q": "How do you see your role fitting into the whole business?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Transformation Aware",
+     "desc": "Responsive to the need for change, can anticipate, adapt & evolve & will encourage others to do the same.",
+     "questions": [
+      {
+       "q": "Describe a time when you helped others adopt a new process or technology on site.",
+       "probes": [
+        "What impact did the new process or technology have?"
+       ]
+      },
+      {
+       "q": "How do you help colleagues who struggle when something on the job changes?",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a time when a process or system changed. How did you adapt?",
+       "probes": []
+      },
+      {
+       "q": "How do you stay up to date on policy, tools or legislation changes that affect your role?",
+       "probes": []
+      },
+      {
+       "q": "How do you prepare for change?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Impact Aware",
+     "desc": "Responsible custodian of the business, considers long-term success and impact on wider society.",
+     "questions": [
+      {
+       "q": "Describe how you’ve reduced environmental impacts when you're on a job (e.g. impact of waste, fuel or noise or effect on the community).",
+       "probes": []
+      },
+      {
+       "q": "How do you make sure the way you work protects the company’s reputation on site?",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a time when you supported your community or represented the business positively.",
+       "probes": []
+      },
+      {
+       "q": "How do you ensure that sensitive information is handled responsibly over its Lifecyle?",
+       "probes": []
+      },
+      {
+       "q": "How would you represent the Story values in your day-to-day work?",
+       "probes": []
+      }
+     ]
+    }
+   ],
+   "values": [
+    {
+     "name": "Grounded",
+     "desc": "Everyone is equal at Story. We are down to earth and treat each other with respect.",
+     "questions": [
+      {
+       "q": "Tell us about a time, on site, when good communication and mutual respect made a difference to the outcome of a job.",
+       "probes": []
+      },
+      {
+       "q": "What does being 'down to earth' mean to you?",
+       "probes": [
+        "How do you demonstrate it in practice?"
+       ]
+      },
+      {
+       "q": "When things get busy or stressful, how do you make sure you stay calm and respectful to others?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Family",
+     "desc": "We nurture, train, develop and keep our people safe, just like a family. We are inclusive and do the right thing for the business and our people.",
+     "questions": [
+      {
+       "q": "Tell us about a time you helped a new starter or apprentice learn the ropes.",
+       "probes": [
+        "How did you approach it?"
+       ]
+      },
+      {
+       "q": "How do you make sure everyone on site feels welcome and included as part of the team?",
+       "probes": []
+      },
+      {
+       "q": "What does being ‘part of a team that looks after each other’ mean to you in day-to-day work?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Trusted",
+     "desc": "What we say is what we do. Our clients, our people and our communities trust us to do it right.",
+     "questions": [
+      {
+       "q": "How do you handle it when you've made a mistake?",
+       "probes": []
+      },
+      {
+       "q": "Describe a time when you had to raise a concern because something didn’t feel right.",
+       "probes": [
+        "What was it about?",
+        "What did you do?"
+       ]
+      },
+      {
+       "q": "Tell us about a time someone relied on you to get something done. How did you make sure you delivered?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Proud",
+     "desc": "We are proud of our safety, our projects, our clients and the success we create together.",
+     "questions": [
+      {
+       "q": "What project or piece of work are you most proud of?",
+       "probes": []
+      },
+      {
+       "q": "How do you contribute to creating work or a project we can be proud of to hand over to a client?",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a time you went the extra mile to make sure the job was done well.",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Winners",
+     "desc": "We are hungry for success and want to be the best performing contractor for our clients, our people and our communities.",
+     "questions": [
+      {
+       "q": "What motivates you to do your best work each day?",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a time you pushed yourself or your team to do better on site.",
+       "probes": [
+        "What motivated you?",
+        "What was the outcome?"
+       ]
+      },
+      {
+       "q": "Describe a situation when you helped deliver a great result for a client, especially when there were pressures on time, cost or quality.",
+       "probes": [
+        "What did you personally do to make it a success?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Hardworking",
+     "desc": "We all pull our weight and work hard for each other",
+     "questions": [
+      {
+       "q": "How do you make sure you stay reliable and consistent in your work?",
+       "probes": []
+      },
+      {
+       "q": "What does ‘working hard’ mean to you on a construction site?",
+       "probes": []
+      },
+      {
+       "q": "Give us an example of when stepped in to help a colleague without being asked.",
+       "probes": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "supervisor",
+   "label": "Supervisor",
+   "blurb": "For supervisors and those leading a team on site day to day.",
+   "behaviours": [
+    {
+     "name": "Safety Aware",
+     "desc": "Committed to continuously improve the physical and mental health safety and wellbeing of all colleagues.",
+     "questions": [
+      {
+       "q": "How do you ensure everyone on site has the information they need to work safely and efficiently?",
+       "probes": []
+      },
+      {
+       "q": "Describe a time when you helped improve a colleague's safety or wellbeing.",
+       "probes": [
+        "What actions did you take?",
+        "How did others respond?",
+        "What was the outcome?"
+       ]
+      },
+      {
+       "q": "Describe a safety improvement you introduced.",
+       "probes": [
+        "What prompted it?",
+        "How did you measure its success?",
+        "What was the impact?"
+       ]
+      },
+      {
+       "q": "Share a time when you recognised that a colleague was struggling with their mental wellbeing.",
+       "probes": [
+        "How did you go about helping them? How did you support them?"
+       ]
+      },
+      {
+       "q": "How do you role model the importance of safety to your team",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a time when you identified and reported a near miss.",
+       "probes": [
+        "What made you recoginise it as a near miss?",
+        "How did you handle reporting it?",
+        "Were there any challaneges or barriers?",
+        "What was the outcome and what did you learn?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Credible",
+     "desc": "Grounded & approachable; no ego, open & self-aware. Takes responsibility for emotions and behaviours, committed to being best version of self.",
+     "questions": [
+      {
+       "q": "Tell us about a time when you had to manage your own emotions to lead effectively.",
+       "probes": [
+        "How did you remain approachable and grounded?",
+        "What did you learn from the experience?",
+        "How did your behaviour influence others?"
+       ]
+      },
+      {
+       "q": "Tell us about a time when you received constructive but challenging feedback?",
+       "probes": [
+        "How did you respond?",
+        "What did you change as a result?",
+        "What impact did those changes have?"
+       ]
+      },
+      {
+       "q": "How do you stay approachable on a busy or high pressure site?",
+       "probes": []
+      },
+      {
+       "q": "What habits or actions help you consistently bring your 'best self' to work?",
+       "probes": []
+      },
+      {
+       "q": "What are your key strengths and development areas?",
+       "probes": [
+        "How are you actively working on your development areas?"
+       ]
+      },
+      {
+       "q": "Describe a time when you were working on a project and a subcontractor, colleague or client voiced a concern that differed from your own initial assessment of the situation. How did you ensure you fully understood their perspective, and what was the outcome? Did your view change - why/why not?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Engages & Motivates Others",
+     "desc": "Chooses appropriate communication to engage others in serving the company & shares information to enable them to do that effectively.",
+     "questions": [
+      {
+       "q": "What methods or routines have you used to ensure great communication with your team to keep them engaged?",
+       "probes": [
+        "How did you make sure the information was understood?",
+        "How did the team respond to your methods?",
+        "What was the result?"
+       ]
+      },
+      {
+       "q": "Describe a time when you encouraged a colleague to do their best by having a difficult conversation.",
+       "probes": [
+        "What did you say or do? How did you approach the conversation?",
+        "How did they respond?",
+        "What was the result?"
+       ]
+      },
+      {
+       "q": "Tell me about a time you kept your team motivated during a long or challenging project?",
+       "probes": [
+        "How do you know if your approach is working?",
+        "How do you ensure that your approach is consistent?",
+        "How did you adapt your approach for different individuals in the team (if required)?",
+        "What challanges did you face and how did you overcome them?",
+        "What was the outcome"
+       ]
+      },
+      {
+       "q": "How do you ensure that information is shared clearly and efficiently on a busy site?",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a time when you recognised that your team were not fully engaged.",
+       "probes": [
+        "What signs did you notice?",
+        "How did you change your approach?",
+        "What was the impact?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Develops Others",
+     "desc": "Seeks out nurtures & recognises talent, empowers others to be best they can, practises coaching & provides opportunities for development.",
+     "questions": [
+      {
+       "q": "Share an example of how you supported a team member’s development.",
+       "probes": [
+        "How did you identify their development need or potential?",
+        "What coaching or development opportunities did you provide?",
+        "What was the outcome?"
+       ]
+      },
+      {
+       "q": "Describe a time you recognised potential in a team member",
+       "probes": [
+        "What steps did you take to help them grow in their role?",
+        "What support did you provide?",
+        "How did you know they were ready for development?",
+        "What changed as a result?"
+       ]
+      },
+      {
+       "q": "How do you spot potential or talent in your team?",
+       "probes": []
+      },
+      {
+       "q": "How do you ensure your team has access to development opportunities?",
+       "probes": []
+      },
+      {
+       "q": "How do you make sure that your feedback is constructive?",
+       "probes": [
+        "Can you provide a brief example?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Inclusive",
+     "desc": "Recognises the value of diversity to the business, seeks, enables, promotes & uses the opinions and ideas of others.",
+     "questions": [
+      {
+       "q": "Tell us about a time when you encouraged diverse perspectives in your team.",
+       "probes": [
+        "How did you ensure that everyone felt heard and included?",
+        "Where there any challenges - how did you handle them?",
+        "What impact did this have on team performance?"
+       ]
+      },
+      {
+       "q": "Describe a time you encouraged a colleague to speak up and/or share a different way of doing things",
+       "probes": [
+        "How did your actions make them feel?",
+        "What did you do to create the confidence for them to contribute?",
+        "How did it help the team?",
+        "How did the project benefit?"
+       ]
+      },
+      {
+       "q": "How do you create an inclusive environment on a busy site?",
+       "probes": []
+      },
+      {
+       "q": "How do you encourage colleagues with different backgrounds to offer their opinions and ideas?",
+       "probes": [
+        "What do you do to create an inclusive environement?",
+        "How would you address any barriers to participation?"
+       ]
+      },
+      {
+       "q": "How do you promote inclusion in daily operations?",
+       "probes": [
+        "Can you provide a brief example?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Collaborative",
+     "desc": "Shows respect for & is interested in others, is open to & appreciates their contribution, seeks a win:win outcomes says what needs to be said even if it’s difficult.",
+     "questions": [
+      {
+       "q": "Describe a time when you worked with others to resolve a conflict or achieve a shared goal.",
+       "probes": [
+        "How did you build trust?",
+        "How did you handle disagreements?",
+        "What was the final outcome?"
+       ]
+      },
+      {
+       "q": "Describe a time when you worked with others to solve a problem.",
+       "probes": [
+        "How did you show respect for others?",
+        "What challenges did you face?",
+        "What was the result?"
+       ]
+      },
+      {
+       "q": "Tell us about a time when you worked with another team or subcontractor to achieve a common goal.",
+       "probes": [
+        "How did you ensure they had the information they needed?"
+       ]
+      },
+      {
+       "q": "Share a time when you had to give negative feedback to a colleague.",
+       "probes": [
+        "How did you approach it?",
+        "What was the outcome?"
+       ]
+      },
+      {
+       "q": "How do you demonstrate that you are open to being approached by team members?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Visionary/Pioneering",
+     "desc": "Looks and strives for a brighter future, willing to take risks and show courage to get there, willing to change the game.",
+     "questions": [
+      {
+       "q": "Share an example of when you introduced a new idea or approach to improve operations.",
+       "probes": [
+        "What were the potential risks?",
+        "How did you gain support from others?",
+        "What was the long-term impact?"
+       ]
+      },
+      {
+       "q": "Tell us about a time when you challenged the usual way of doing things on site because you thought there was a better way.",
+       "probes": [
+        "What motivated you to speak up or act differently?",
+        "How did you bring others along with you?",
+        "What did the experience teach you about leading change?"
+       ]
+      },
+      {
+       "q": "Tell me about a time you introduced a new and improved way of working in your role",
+       "probes": []
+      },
+      {
+       "q": "How do you see the future of construction and how do you think your role will contribute to that?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Thinks and Acts Commercially",
+     "desc": "Is interested in and understands the whole business & how well it serves the client, constantly striving to do business in an effective and efficient way.",
+     "questions": [
+      {
+       "q": "Describe a time when you made a decision that improved efficiency or saved money on a project.",
+       "probes": [
+        "What commercial factors did you consider?",
+        "How did you balance cost and quality?",
+        "What was the result?"
+       ]
+      },
+      {
+       "q": "Share a time when you spotted something on site that could have led to unnecessary costs or delays.",
+       "probes": [
+        "What was at risk?",
+        "What did you do to prevent this happening? What action did you take to prevent it?",
+        "How did you raise the issue?",
+        "What impact did it have on the project?"
+       ]
+      },
+      {
+       "q": "Tell us about a decision you made that improved cost efficiency or reduced waste.",
+       "probes": []
+      },
+      {
+       "q": "How do you ensure that your team understands how their work fits into / contributes to the whole business?",
+       "probes": []
+      },
+      {
+       "q": "Tell me about a time you addressed a team member whose actions were causing delays or impacting performance",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Transformation Aware",
+     "desc": "Responsive to the need for change, can anticipate, adapt & evolve & will encourage others to do the same.",
+     "questions": [
+      {
+       "q": "Tell us about a time when you led or adapted to a significant change in your work environment.",
+       "probes": [
+        "How did you prepare your team?",
+        "What challenges did you face?",
+        "How did you encourage adaptability?"
+       ]
+      },
+      {
+       "q": "Tell us about a time when you helped implement a new process on site.",
+       "probes": [
+        "What was your role?",
+        "What challenges did you face?",
+        "How did you get others on board?",
+        "What impact did the new process have on the team or project?"
+       ]
+      },
+      {
+       "q": "Tell us about a major change you experienced on a project.",
+       "probes": [
+        "How did you help your team adapt?"
+       ]
+      },
+      {
+       "q": "How do you identify when something needs changing?",
+       "probes": [
+        "What actions do you take once you had identified it?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Impact Aware",
+     "desc": "Responsible custodian of the business, considers long term success and impact on wider society.",
+     "questions": [
+      {
+       "q": "Describe a decision you made that considered the long-term impact on the business or community.",
+       "probes": [
+        "What values guided your decision?",
+        "How did you assess the broader implications?",
+        "What impact/legacy did it leave?"
+       ]
+      },
+      {
+       "q": "How do you ensure that your work contributes positively to the community and environment surrounding the site?",
+       "probes": []
+      },
+      {
+       "q": "How do you think a construction supervisor can positively impact the local community or environment?",
+       "probes": []
+      },
+      {
+       "q": "Describe the practices you follow to minimise disruption or environmental harm.",
+       "probes": [
+        "How have you encouraged your team to adopt better practices?"
+       ]
+      },
+      {
+       "q": "Tell us about a time when you engaged with local stakeholders or community members during a project.",
+       "probes": [
+        "What were the circumstances?",
+        "What was the outcome?"
+       ]
+      }
+     ]
+    }
+   ],
+   "values": [
+    {
+     "name": "Grounded",
+     "desc": "Everyone is equal at Story. We are down to earth and treat each other with respect.",
+     "questions": [
+      {
+       "q": "What does being 'down to earth' mean to you in the workplace?",
+       "probes": [
+        "How do you demonstrate this in your daily work?",
+        "How might this fit with working at Story?"
+       ]
+      },
+      {
+       "q": "How do you build respectful working relationships with everyone from operatives to senior management?",
+       "probes": [
+        "How do you adapt your approach to different people on site?",
+        "How does respect affect day-to-day operations?"
+       ]
+      },
+      {
+       "q": "Give us an example of how you stay approachable and down-to-earth, even during busy or stressful site periods.",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Family",
+     "desc": "We nurture, train, develop and keep our people safe, just like a family. We are inclusive and do the right thing for the business and our people.",
+     "questions": [
+      {
+       "q": "Tell us about a time when you supported a less experienced colleague on site, for example through mentoring, buddying up or helping with training.",
+       "probes": [
+        "What did you do to support them?",
+        "What was the outcome for that person and the job?"
+       ]
+      },
+      {
+       "q": "How do you look out for your teammates’ wellbeing, especially during night shifts, possessions or long runs of work?",
+       "probes": [
+        "How do you spot the signs that a colleague is struggling?",
+        "How have you acted on that before?"
+       ]
+      },
+      {
+       "q": "Describe how you have created a safe, supportive environment for your team both mentally and physically.",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Trusted",
+     "desc": "What we say is what we do. Our clients, our people and our communities trust us to do it right.",
+     "questions": [
+      {
+       "q": "Describe a situation when trust made the difference between a smooth job and a difficult job.",
+       "probes": [
+        "How did it affect delivery?",
+        "How did you build that trust?"
+       ]
+      },
+      {
+       "q": "Have you ever had to own up to an error or delay on a project?",
+       "probes": [
+        "How did you help get things back on track?",
+        "What impact did your honesty have on others?"
+       ]
+      },
+      {
+       "q": "Tell us about a time when you had to make a commitment to a client or team. How did you ensure you delivered on it?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Proud",
+     "desc": "We are proud of our safety, our projects, our clients and the success we create together.",
+     "questions": [
+      {
+       "q": "Describe a time when your work received recognition from clients, colleagues or managers.",
+       "probes": [
+        "How did that recognition make you feel?",
+        "What do you think contributed to that success?"
+       ]
+      },
+      {
+       "q": "Describe a time when you took action to maintain or improve safety standards on site.",
+       "probes": [
+        "How did you contribute to a safe working environment?",
+        "How do you encourage pride in others to maintain high safety standards?"
+       ]
+      },
+      {
+       "q": "What project or achievement are you most proud of, and what was your role in it?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Winners",
+     "desc": "We are hungry for success and want to be the best performing contractor for our clients, our people and our communities.",
+     "questions": [
+      {
+       "q": "How do you define success on a project?",
+       "probes": [
+        "What key outcomes matter most to you? e.g. safety, quality, cost",
+        "How do you celebrate achievements?"
+       ]
+      },
+      {
+       "q": "Describe a situation when you faced a major obstacle, such as possession overruns, bad weather or plant failure, but still delivered successfully.",
+       "probes": [
+        "How did you approach the challenge?",
+        "What did you learn from it?"
+       ]
+      },
+      {
+       "q": "Give us an example of when you've pushed for continuous improvement or a better way of working.",
+       "probes": [
+        "What prompted you to pursue this?",
+        "What was the outcome?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Hardworking",
+     "desc": "We all pull our weight and work hard for each other",
+     "questions": [
+      {
+       "q": "Tell us about a time when a project deadline or possession window required extra effort from the team.",
+       "probes": [
+        "How did you contribute personally?",
+        "What motivated you to do that?"
+       ]
+      },
+      {
+       "q": "How do you maintain high performance and reliability during long shifts, tight deadlines or challenging weather conditions?",
+       "probes": [
+        "How do you support others during these times?",
+        "What strategies help you stay focused?"
+       ]
+      },
+      {
+       "q": "Tell us about a time when the workload was heavy. How did you keep yourself and the team going?",
+       "probes": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "manager",
+   "label": "Manager",
+   "blurb": "For managers responsible for a team, project or function.",
+   "behaviours": [
+    {
+     "name": "Safety Aware",
+     "desc": "Committed to continuously improve the physical and mental health safety and wellbeing of all colleagues.",
+     "questions": [
+      {
+       "q": "Share an example of how you’ve supported physical and mental wellbeing in your team. Probes:",
+       "probes": [
+        "What action did you take?",
+        "How did you measure the impact?",
+        "Who did you involve?"
+       ]
+      },
+      {
+       "q": "Tell us about a time you challenged unsafe behaviour.",
+       "probes": [
+        "What was the issue?",
+        "How did you resolve it?",
+        "What was the result?"
+       ]
+      },
+      {
+       "q": "Describe a situation when safety standards or behaviours were slipping.",
+       "probes": [
+        "How did you step in and support the team to get back on track?"
+       ]
+      },
+      {
+       "q": "What proactive steps do you take to promote a culture where people feel responsible for each other's safety?",
+       "probes": []
+      },
+      {
+       "q": "How do you overcome colleagues' reluctance to report near misses because of the stigma that it's unpopular or difficult?",
+       "probes": []
+      },
+      {
+       "q": "How do you create an environment where people feel comfortable reporting near misses?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Credible",
+     "desc": "Grounded & approachable; no ego, open & self-aware. Takes responsibility for emotions and behaviours, committed to being best version of self.",
+     "questions": [
+      {
+       "q": "Describe a time when you managed your own emotions to continue to successfully lead a team",
+       "probes": [
+        "What did you do differently?",
+        "How did your behaviour influence others?"
+       ]
+      },
+      {
+       "q": "Tell us about a time you received tough feedback.",
+       "probes": [
+        "How did you respond?",
+        "What changed?"
+       ]
+      },
+      {
+       "q": "How do you stay grounded and approachable, especially during busy or pressured periods?",
+       "probes": []
+      },
+      {
+       "q": "Give us an example of how you role-model self-awareness for your team.",
+       "probes": []
+      },
+      {
+       "q": "How do you ensure your team sees you as approachable, especially on bad days?",
+       "probes": []
+      },
+      {
+       "q": "How do you bring your best self to work?",
+       "probes": [
+        "What habits or choices help you to develop your best self?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Engages & Motivates Others",
+     "desc": "Chooses appropriate communication to engage others in serving the company & shares information to enable them to do that effectively.",
+     "questions": [
+      {
+       "q": "Tell us about a time you motivated your team during a challenging period.",
+       "probes": [
+        "What communication methods did you use?",
+        "How did you tailor your approach?",
+        "What was the outcome?"
+       ]
+      },
+      {
+       "q": "What do you do when someone in the team isn’t motivated?",
+       "probes": [
+        "How do you tease out what's behind it?",
+        "How do you minimise the impact on the wider team?"
+       ]
+      },
+      {
+       "q": "Share an example of how you’ve celebrated success to maintain or boost motivation.",
+       "probes": []
+      },
+      {
+       "q": "How do you ensure your team has the information they need to feel part of the bigger picture?",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a time when you had to change the way you communicated.",
+       "probes": [
+        "How did you recognise this?",
+        "What was the outcome?"
+       ]
+      },
+      {
+       "q": "How do you recognise when a colleague is not engaging with the task at hand?",
+       "probes": [
+        "What do you do to ensure they're engaged?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Develops Others",
+     "desc": "Seeks out nurtures & recognises talent, empowers others to be the best they can, practises coaching & provides opportunities for development.",
+     "questions": [
+      {
+       "q": "Give us an example of how you’ve supported someone’s growth or development.",
+       "probes": [
+        "What approaches helped?",
+        "How did you identify their development needs?",
+        "What was the result?"
+       ]
+      },
+      {
+       "q": "Tell us about a time you recognised potential in a colleague.",
+       "probes": [
+        "How did you support them to grow?",
+        "How did you know they were ready?",
+        "What changed as a result?"
+       ]
+      },
+      {
+       "q": "Give us an example of when you used coaching instead of giving the answer straight away.",
+       "probes": []
+      },
+      {
+       "q": "How do you spot emerging talent in your team?",
+       "probes": []
+      },
+      {
+       "q": "How do you empower others to reach their full potential?",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a time when you developed a colleague into a bigger role.",
+       "probes": [
+        "What did you do to support them?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Inclusive",
+     "desc": "Recognises the value of diversity to the business, seeks, enables, promotes & uses the opinions and ideas of others.",
+     "questions": [
+      {
+       "q": "Describe a situation when you actively sought out different perspectives to solve a problem.",
+       "probes": [
+        "How did you ensure everyone felt heard?",
+        "What impact did this have on the outcome?"
+       ]
+      },
+      {
+       "q": "How do you manage situations in which louder voices overshadow quieter ones?",
+       "probes": [
+        "Have you ever got it wrong? If so, what would you do differently next time?"
+       ]
+      },
+      {
+       "q": "Share a time when involving a quieter colleague improved an outcome.",
+       "probes": []
+      },
+      {
+       "q": "How do you keep inclusion front of mind even when you're under pressure?",
+       "probes": []
+      },
+      {
+       "q": "How do you promote inclusion day-to-day?",
+       "probes": []
+      },
+      {
+       "q": "How do you ensure that colleagues are recognised for their opinions and ideas?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Collaborative",
+     "desc": "Shows respect for & is interested in others, is open to & appreciates their contribution, seeks a win:win outcome and says what needs to be said even if it’s difficult.",
+     "questions": [
+      {
+       "q": "Tell us about a time you worked with others to achieve a shared goal, even when it was difficult.",
+       "probes": [
+        "How did you handle disagreements?",
+        "What did you do to build trust?",
+        "How did you ensure a win-win outcome?"
+       ]
+      },
+      {
+       "q": "A subcontractor or another team's work is affecting progress. How would you approach this while keeping relationships positive?",
+       "probes": [
+        "What options would you explore to get things back on track?",
+        "What steps would you take to try and maintain a positive relationship?"
+       ]
+      },
+      {
+       "q": "Give us an example of how you resolved conflict to reach a positive or mutually beneficial outcome for everyone.",
+       "probes": []
+      },
+      {
+       "q": "How do you create an environment where people feel comfortable to challenge ideas, including yours?",
+       "probes": []
+      },
+      {
+       "q": "Describe a time when you had to give negative feedback.",
+       "probes": [
+        "How did you approach it and what was the outcome?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Visionary/Pioneering",
+     "desc": "Looks and strives for a brighter future, willing to take risks and show courage to get there, willing to change the game.",
+     "questions": [
+      {
+       "q": "Share an example of when you took a bold step to drive improvement.",
+       "probes": [
+        "What risks did you take?",
+        "How did you encourage others to follow?",
+        "What was the long-term impact?"
+       ]
+      },
+      {
+       "q": "Tell us about a time when you encouraged colleagues to try a new approach.",
+       "probes": [
+        "What resistance did you face?",
+        "How did you adapt your message or communication style for different people?",
+        "What data or evidence did you use to support your case?"
+       ]
+      },
+      {
+       "q": "Share a time when you stood by a bold decision despite resistance.",
+       "probes": [
+        "What helped you stay confident?"
+       ]
+      },
+      {
+       "q": "Tell us about a calculated risk you took.",
+       "probes": [
+        "What was your rationale and what happened?"
+       ]
+      },
+      {
+       "q": "Describe a time when you introduced a major change.",
+       "probes": [
+        "How did you stay focused to achieve the outcome?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Thinks and Acts Commercially",
+     "desc": "Is interested in and understands the whole business & how well it serves the client, constantly striving to do business in an effective and efficient way.",
+     "questions": [
+      {
+       "q": "Describe a decision you made that improved efficiency or the client experience.",
+       "probes": [
+        "What factors did you consider?",
+        "How did you balance cost and quality?",
+        "What was the result?"
+       ]
+      },
+      {
+       "q": "Tell us about a time when commercial pressures and safety needs came into conflict.",
+       "probes": [
+        "How did you manage this?",
+        "What was the result?"
+       ]
+      },
+      {
+       "q": "Share an example of when you identified an inefficiency and made improvements.",
+       "probes": []
+      },
+      {
+       "q": "Describe a situation when understanding client needs shaped your approach.",
+       "probes": []
+      },
+      {
+       "q": "Share a time when you reviewed how things were done and identified potential cost savings.",
+       "probes": [
+        "What was the outcome?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Transformation Aware",
+     "desc": "Responsive to the need for change, can anticipate, adapt & evolve & will encourage others to do the same.",
+     "questions": [
+      {
+       "q": "Tell us about a time when you led or adapted to a significant change.",
+       "probes": [
+        "How did you prepare yourself and others?",
+        "What challenges did you face?",
+        "How did you encourage adaptability?"
+       ]
+      },
+      {
+       "q": "What do you do when someone resists a change you need to introduce?",
+       "probes": [
+        "How do you approach the situation?",
+        "How do you encourage adaptability?"
+       ]
+      },
+      {
+       "q": "How do you support team morale and clarity when things feel uncertain?",
+       "probes": []
+      },
+      {
+       "q": "Share an example of when you have encouraged others to embrace a new way of working.",
+       "probes": [
+        "How did you present it?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Impact Aware",
+     "desc": "Responsible custodian of the business, considers long term success and impact on wider society.",
+     "questions": [
+      {
+       "q": "Describe a decision you made that considered the longer-term impact on the business.",
+       "probes": [
+        "What values guided your decision?",
+        "How did you assess the broader implications?",
+        "What legacy did it leave?"
+       ]
+      },
+      {
+       "q": "How do you balance short-term delivery with long-term environmental or community impact?",
+       "probes": [
+        "What values guide your decisions?",
+        "How do you assess the broader implications?"
+       ]
+      },
+      {
+       "q": "How do you help your team understand the wider consequences of their decisions?",
+       "probes": []
+      },
+      {
+       "q": "Share a time when you challenged an approach because it didn’t support long-term responsibility or sustainability.",
+       "probes": []
+      }
+     ]
+    }
+   ],
+   "values": [
+    {
+     "name": "Grounded",
+     "desc": "Everyone is equal at Story. We are down to earth and treat each other with respect.",
+     "questions": [
+      {
+       "q": "How do you make sure you’re 'pulling your weight' while supporting others to do the same? Can you give a specific example?",
+       "probes": [
+        "How did it affect team performance or delivery?"
+       ]
+      },
+      {
+       "q": "How do you build positive working relationships with colleagues in different roles?",
+       "probes": [
+        "What have you learned about building relationships across different roles?"
+       ]
+      },
+      {
+       "q": "How do you stay calm and steady when others are stressed?",
+       "probes": []
+      },
+      {
+       "q": "How do you balance your own responsibilities with helping others?",
+       "probes": []
+      },
+      {
+       "q": "How do you adjust your communication style for different roles or personalities?",
+       "probes": []
+      },
+      {
+       "q": "How do you keep relationships positive even when there are disagreements or pressures?",
+       "probes": []
+      },
+      {
+       "q": "How do you recognise when your team is becoming stressed or overwhelmed?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Family",
+     "desc": "We nurture, train, develop and keep our people safe, just like a family. We are inclusive and do the right thing for the business and our people.",
+     "questions": [
+      {
+       "q": "Tell us about a time you managed a conflict between colleagues or subcontractors.",
+       "probes": [
+        "How did you approach the situation?",
+        "What did you do to reinforce teamwork after the disagreement?",
+        "What was the outcome and what did you learn?"
+       ]
+      },
+      {
+       "q": "Tell us about a time when you supported a less experienced colleague? For example, with mentoring, buddying up or helping with training.",
+       "probes": [
+        "What steps did you take to build their confidence?",
+        "How did you balance support with giving them space to learn?",
+        "How did you tailor your approach to their skill level or learning style?"
+       ]
+      },
+      {
+       "q": "How do you make sure everyone feels welcome and included as part of the team?",
+       "probes": []
+      },
+      {
+       "q": "What do you do to help new starters settle into their role?",
+       "probes": []
+      },
+      {
+       "q": "How do you encourage the team to support each other on and off the tools?",
+       "probes": []
+      },
+      {
+       "q": "Share a moment when someone felt more included because of something you did.",
+       "probes": [
+        "What was it you did?",
+        "How did it change your management style?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Trusted",
+     "desc": "What we say is what we do. Our clients, our people and our communities trust us to do it right.",
+     "questions": [
+      {
+       "q": "Describe a situation when trust helped deliver a successful outcome.",
+       "probes": [
+        "How did you build that trust?",
+        "What part did you play in maintaining that trust?",
+        "How did it benefit the team or project?",
+        "How did it affect delivery?"
+       ]
+      },
+      {
+       "q": "Tell us about a time when you led during an incident or near miss.",
+       "probes": [
+        "How and to whom did you communicate the incident or near miss?",
+        "What was the toughest moment in that situation, and how did you handle it?",
+        "What did the incident teach you about your leadership under pressure?",
+        "How did your actions impact the team’s confidence in you?"
+       ]
+      },
+      {
+       "q": "How do you balance client expectations with what’s realistically achievable?",
+       "probes": []
+      },
+      {
+       "q": "Share a time when you had to push back on client expectations.",
+       "probes": [
+        "How did you handle it?",
+        "What was the outcome?"
+       ]
+      },
+      {
+       "q": "How do you manage expectations when delays or changes are unavoidable?",
+       "probes": [
+        "How do you ensure you maintain trust while being realistic about what’s possible?"
+       ]
+      },
+      {
+       "q": "How do you challenge a client’s request without damaging the relationship?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Proud",
+     "desc": "We are proud of our safety, our projects, our clients and the success we create together.",
+     "questions": [
+      {
+       "q": "How do you help your team take pride and ownership in their work?",
+       "probes": []
+      },
+      {
+       "q": "Describe a project or moment you’re proud of. What part did you play personally?",
+       "probes": [
+        "How did you support or guide your team through any challenges?",
+        "Has it influenced the way you manage/lead today?"
+       ]
+      },
+      {
+       "q": "How do you celebrate wins?",
+       "probes": [
+        "How do you ensure credit is shared appropriately with the team?",
+        "What specific things do you do to make celebrations meaningful rather than tokenistic?",
+        "Have you ever missed an opportunity to celebrate a win? What would you do differently now?"
+       ]
+      },
+      {
+       "q": "How do you encourage ownership of projects without micromanaging?",
+       "probes": []
+      },
+      {
+       "q": "How do you tailor your approach for different personalities or experience levels?",
+       "probes": []
+      },
+      {
+       "q": "How do you recognise good work in a way that comes over as meaningful and not just a tick-box exercise?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Winners",
+     "desc": "We are hungry for success and want to be the best performing contractor for our clients, our people and our communities.",
+     "questions": [
+      {
+       "q": "How do you stay motivated during long or challenging projects?",
+       "probes": [
+        "How do you build on your own motivation to inspire others?",
+        "What conditions bring out your best work?"
+       ]
+      },
+      {
+       "q": "How do you keep performance high during pressured periods without compromising safety?",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a time when performance dipped. How did you bring the team together to improve rather than assign blame?",
+       "probes": [
+        "What indicators or behaviours made it clear something wasn’t right?",
+        "What might you do differently next time?"
+       ]
+      },
+      {
+       "q": "How do you prioritise when everything feels urgent?",
+       "probes": []
+      },
+      {
+       "q": "How do you stop people taking shortcuts during critical periods?",
+       "probes": []
+      },
+      {
+       "q": "How do you personally stay calm and focused when others may not be?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Hardworking",
+     "desc": "We all pull our weight and work hard for each other.",
+     "questions": [
+      {
+       "q": "How do you maintain reliability and performance during demanding periods? e.g. long shifts, tight deadlines or challenging weather conditions?",
+       "probes": [
+        "Can you give an example of when your consistent approach helped the team deliver?"
+       ]
+      },
+      {
+       "q": "How do you prevent burnout in yourself and others?",
+       "probes": [
+        "What steps do you take to recharge, even when things are busy?",
+        "How do you create an environment where people feel able to say that they’re overloaded?",
+        "What strategies do you use to keep people going without pushing them too far?"
+       ]
+      },
+      {
+       "q": "What do you do when two colleagues struggle to work together?",
+       "probes": [
+        "How do you protect the wider team?",
+        "What do you do if the conflict is affecting delivery timelines?"
+       ]
+      },
+      {
+       "q": "Share an example of when you successfully resolved a difficult conflict.",
+       "probes": [
+        "How did you judge whether to intervene?",
+        "What was the outcome?"
+       ]
+      },
+      {
+       "q": "What routines or habits help you stay focused and reliable during demanding periods?",
+       "probes": []
+      },
+      {
+       "q": "How do you role-model reliability for your team?",
+       "probes": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "seniormanager",
+   "label": "Senior Manager",
+   "blurb": "For senior managers leading managers, multiple teams or a region.",
+   "behaviours": [
+    {
+     "name": "Safety Aware",
+     "desc": "Committed to continuously improve the physical and mental health safety and wellbeing of all colleagues.",
+     "questions": [
+      {
+       "q": "How have you driven improvements in safety performance and culture across the teams you lead?",
+       "probes": [
+        "What helped you identify where to focus?",
+        "How did you engage colleagues to adopt the changes?",
+        "What changed in behaviour or outcomes as a result?"
+       ]
+      },
+      {
+       "q": "Describe a time you needed to step in on a safety issue that involved more than one team.",
+       "probes": [
+        "How did you bring people together to resolve it?",
+        "What challenges did you encounter and how did you resolve them?",
+        "What learning did you share afterwards?"
+       ]
+      },
+      {
+       "q": "How do you build safety into longer-term planning and decisions in your area?",
+       "probes": [
+        "How do you factor safety into project design, resourcing or commercial decisions?",
+        "How do you get peers to take shared accountability?"
+       ]
+      },
+      {
+       "q": "How do you ensure that physical and mental health safety and wellbeing are prioritised?",
+       "probes": []
+      },
+      {
+       "q": "Give us an example of how you prevented an issue before it emerged.",
+       "probes": [
+        "How did you identify the potential risk?",
+        "Did it change working practices?"
+       ]
+      },
+      {
+       "q": "Describe a time when you witnessed a major safety violation on site. How did you address it immediately and in the longer term?",
+       "probes": []
+      },
+      {
+       "q": "Describe a time you had to foster a 'no-blame' reporting culture for near misses. What steps did you take?",
+       "probes": [
+        "What was the result?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Credible",
+     "desc": "Grounded & approachable; no ego, open & self-aware. Takes responsibility for emotions and behaviours, committed to being best version of self",
+     "questions": [
+      {
+       "q": "Tell us about a time when you took responsibility for a decision that didn’t go as planned.",
+       "probes": [
+        "What did you learn?",
+        "How did you communicate this to your team or peers?",
+        "What did you do to put things right?"
+       ]
+      },
+      {
+       "q": "How do you create an environment where your team feel comfortable sharing different views or challenging your thinking?",
+       "probes": [
+        "What signals do you give to encourage open dialogue?",
+        "Can you share an example when someone’s challenge changed your mind?",
+        "How did that impact team trust?"
+       ]
+      },
+      {
+       "q": "What behaviours do you intentionally monitor in yourself?",
+       "probes": [
+        "Can you share a moment when your behaviour influenced others (in a positive or a negative way)?"
+       ]
+      },
+      {
+       "q": "How do you course-correct if you feel you’ve not role-modelled well?",
+       "probes": []
+      },
+      {
+       "q": "How do you keep your words and actions aligned?",
+       "probes": []
+      },
+      {
+       "q": "What values are most important to you in a workplace, and how do they help you bring your best self to work?",
+       "probes": []
+      },
+      {
+       "q": "How do you handle emotions such as frustration or disappointment when a project falls behind schedule or a client is unsatisfied?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Engages & Motivates Others",
+     "desc": "Chooses appropriate communication to engage others in serving the company & shares information to enable them to do that effectively",
+     "questions": [
+      {
+       "q": "How have you motivated teams during a challenging or high-pressure period?",
+       "probes": [
+        "What early indicators showed morale was slipping?",
+        "How did you balance expectations with empathy?",
+        "How did you measure the impact of your leadership?"
+       ]
+      },
+      {
+       "q": "How have you brought several teams or regions/divisions together behind a shared goal?",
+       "probes": [
+        "What communication approach did you take and why?",
+        "How did you adapt the message for different audiences?",
+        "What were the results for engagement or delivery?"
+       ]
+      },
+      {
+       "q": "How do you make sure your managers pass on clear and consistent communication?",
+       "probes": [
+        "What expectations do you set?",
+        "How do you maintain alignment across dispersed teams?",
+        "How do you check for understanding and buy-in?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Develops Others",
+     "desc": "Seeks out nurtures & recognises talent, empowers others to be best they can, practises coaching & provides opportunities for development",
+     "questions": [
+      {
+       "q": "How do you spot potential in your colleagues, and support people to grow?",
+       "probes": [
+        "What markers of potential do you look for?",
+        "How do you differentiate between performance and potential?",
+        "Can you share a success story of someone or a team you progressed?"
+       ]
+      },
+      {
+       "q": "Tell us about a time when you improved capability across a team. What support or approaches did you put in place?",
+       "probes": [
+        "What development gaps did you identify?",
+        "What interventions or structures did you introduce?",
+        "What changed in team performance or culture?"
+       ]
+      },
+      {
+       "q": "How do you develop colleagues and build strong succession plans?",
+       "probes": [
+        "How do you identify future talent?",
+        "What development opportunities do you create?",
+        "How do you check that people are genuinely ready for progression?"
+       ]
+      },
+      {
+       "q": "Give us an example of how you mentored a direct report to prepare them for a promotion.",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Inclusive",
+     "desc": "Recognises the value of diversity to the business, seeks, enables, promotes & uses the opinions and ideas of others.",
+     "questions": [
+      {
+       "q": "Describe how you’ve influenced or delivered inclusion improvements across your area.",
+       "probes": [
+        "What barriers did you identify?",
+        "Who did you need to engage?",
+        "What behaviour changes or outcomes did you observe?"
+       ]
+      },
+      {
+       "q": "Tell us about a time you ensured that quieter or under-represented voices shaped a decision.",
+       "probes": [
+        "How did you identify whose voices were missing?",
+        "What did you do to involve them meaningfully?",
+        "How did it change the outcome?"
+       ]
+      },
+      {
+       "q": "How do you hold your managers accountable for creating inclusive team environments?",
+       "probes": [
+        "What expectations do you set?",
+        "How do you measure whether inclusivity is happening in practice?",
+        "How do you address inconsistency or resistance?"
+       ]
+      },
+      {
+       "q": "Can you share a specific example of a time when you realised a decision you were making, or a team dynamic, was influenced by unconscious bias?",
+       "probes": [
+        "What action did you take to correct it?",
+        "What was the outcome?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Collaborative",
+     "desc": "Shows respect for & is interested in others, is open to & appreciates their contribution, seeks a win:win outcomes says what needs to be said even if it’s difficult",
+     "questions": [
+      {
+       "q": "How do you make sure your team work seamlessly with other teams?",
+       "probes": [
+        "What structures promote shared understanding?",
+        "How do you handle conflicting priorities?",
+        "How do you maintain joint accountability?"
+       ]
+      },
+      {
+       "q": "Tell us about a time you aligned colleagues who held different viewpoints.",
+       "probes": [
+        "How did you understand the differences in their positions?",
+        "What techniques did you use to gain alignment?",
+        "How did you maintain collaboration after the decision was made?"
+       ]
+      },
+      {
+       "q": "Tell us about a time you resolved a cross-team issue affecting performance.",
+       "probes": [
+        "What underlying tensions existed?",
+        "How did you facilitate an agreed solution?",
+        "What long-term changes came from it?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Visionary/Pioneering",
+     "desc": "Looks and strives for a brighter future, willing to take risks and show courage to get there, willing to change the game",
+     "questions": [
+      {
+       "q": "How do you encourage innovation while staying aligned with priorities?",
+       "probes": [
+        "What safeguards or guidelines do you use?",
+        "How do you evaluate innovative proposals?",
+        "How do you celebrate successful experimentation?"
+       ]
+      },
+      {
+       "q": "Tell us about a strategic improvement or innovation you led.",
+       "probes": [
+        "What problem or opportunity drove the change?",
+        "How did you secure buy-in from colleagues?",
+        "What measurable improvements resulted?"
+       ]
+      },
+      {
+       "q": "How do you prepare your teams for future industry or client expectations?",
+       "probes": [
+        "What trends do you pay attention to?",
+        "How do you translate future thinking into operational changes?",
+        "What recent example shows this in action?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Thinks and Acts Commercially",
+     "desc": "Is interested in and understands the whole business & how well it serves the client, constantly striving to do business in an effective and efficient way",
+     "questions": [
+      {
+       "q": "Tell us about a commercial improvement you led.",
+       "probes": [
+        "What changed as a result?",
+        "How did you identify the opportunity?",
+        "What financial or service outcome resulted?"
+       ]
+      },
+      {
+       "q": "How do you build commercial awareness across your teams?",
+       "probes": [
+        "What training or expectations do you set?",
+        "How do you reinforce everyday commercial decision-making?",
+        "How do you intervene if decisions are misaligned?"
+       ]
+      },
+      {
+       "q": "Tell us about a commercial decision you made that affected several teams.",
+       "probes": [
+        "What information helped shape your choice?",
+        "How did you communicate the implications to relevant colleagues?",
+        "What was the outcome compared with expectations?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Transformation Aware",
+     "desc": "Responsive to the need for change, can anticipate, adapt & evolve & will encourage others to do the same",
+     "questions": [
+      {
+       "q": "Tell us about a time when you needed to drive change without having full authority.",
+       "probes": [
+        "How did you influence colleagues you didn’t manage directly?",
+        "What communication strategies did you use?",
+        "What was the final outcome?"
+       ]
+      },
+      {
+       "q": "Describe a time you led your team through a significant change.",
+       "probes": [
+        "What concerns or resistance did you face?",
+        "How did you prepare and support people through the transition?",
+        "How did you measure whether adoption was successful?"
+       ]
+      },
+      {
+       "q": "How do you build your team's ability to adapt to future change?",
+       "probes": [
+        "What capabilities do you focus on developing?",
+        "How do you foster openness to change?",
+        "Can you give an example of when readiness paid off?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Impact Aware",
+     "desc": "Responsible custodian of the business, considers long term success and impact on wider society",
+     "questions": [
+      {
+       "q": "Describe a decision you took that supported both day-to-day needs and long-term success.",
+       "probes": [
+        "What trade-offs did you need to balance?",
+        "How did you communicate these to your peers?",
+        "What outcomes reinforced that it was the right call?"
+       ]
+      },
+      {
+       "q": "Tell us about a leadership decision you made that had long-term impact for the community or clients.",
+       "probes": [
+        "What was your thought process at the time?",
+        "Who did you involve in shaping the decision?",
+        "What positive impact did it create?"
+       ]
+      },
+      {
+       "q": "How do you make sure your teams play their part in our wider social and environmental responsibilities?",
+       "probes": [
+        "What initiatives or standards have you implemented?",
+        "How do you embed these expectations?",
+        "What evidence shows the impact?"
+       ]
+      }
+     ]
+    }
+   ],
+   "values": [
+    {
+     "name": "Grounded",
+     "desc": "Everyone is equal at Story. We are down to earth and treat each other with respect.",
+     "questions": [
+      {
+       "q": "How do you stay connected to site-based colleagues and keep your decisions grounded?",
+       "probes": [
+        "What mechanisms do you use to hear unfiltered feedback?",
+        "How do you balance office-based work with visibility on site?",
+        "How has feedback from site-based teams changed one of your decisions?"
+       ]
+      },
+      {
+       "q": "How do you role-model the standards you expect across your whole team?",
+       "probes": [
+        "What behaviours do you intentionally role-model to influence others?",
+        "Can you describe a time when your approach set the tone for others during a difficult period?",
+        "How do you know your behaviour is having the desired impact?"
+       ]
+      },
+      {
+       "q": "How do you stay accessible and open to feedback as your responsibilities grow?",
+       "probes": [
+        "What habits or routines help you stay connected to people?",
+        "How do you prevent hierarchy from discouraging honest feedback?"
+       ]
+      },
+      {
+       "q": "Tell us about a time when someone challenged your viewpoint. How did you respond?",
+       "probes": [
+        "What was the outcome?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Family",
+     "desc": "We nurture, train, develop and keep our people safe, just like a family. We are inclusive and do the right thing for the business and our people.",
+     "questions": [
+      {
+       "q": "Tell us about a time you handled a people issue that involved several teams.",
+       "probes": [
+        "How did you investigate the issue?",
+        "What actions did you take to restore trust or cohesion?",
+        "What longer-term changes followed?"
+       ]
+      },
+      {
+       "q": "How do you ensure fairness and consistency across managers when it comes to supporting and developing their people?",
+       "probes": [
+        "How do you spot variability in how managers treat or support their teams?",
+        "What steps do you take to influence or coach managers to improve?",
+        "How do you monitor improvement?"
+       ]
+      },
+      {
+       "q": "How do you create a culture where colleagues feel safe, supported and connected?",
+       "probes": [
+        "How do you identify when areas of the team feel disengaged?",
+        "What actions do you take to strengthen connection or wellbeing?",
+        "How do you influence managers in your reporting line to model the same behaviours?"
+       ]
+      },
+      {
+       "q": "How do you ensure that the message of 'Do the right thing' is applied in practice and not just taken for granted?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Trusted",
+     "desc": "What we say is what we do. Our clients, our people and our communities trust us to do it right.",
+     "questions": [
+      {
+       "q": "Describe a time when you managed a challenging relationship with a client or partner while protecting trust.",
+       "probes": [
+        "How did you protect both trust and business interests?",
+        "What communication methods did you rely on?",
+        "What was the long-term effect on the relationship?"
+       ]
+      },
+      {
+       "q": "How do you make sure issues are surfaced early and not hidden?",
+       "probes": [
+        "What processes help you surface bad news early?",
+        "How do you stop problems being hidden or minimised?"
+       ]
+      },
+      {
+       "q": "Tell us about a time when your integrity guided a major decision.",
+       "probes": [
+        "What pressures or competing interests were you balancing?",
+        "How did you ensure that your values guided your judgment?",
+        "What did others learn from observing your approach?"
+       ]
+      },
+      {
+       "q": "Share a time when being transparent avoided a larger issue.",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Proud",
+     "desc": "We are proud of our safety, our projects, our clients and the success we create together.",
+     "questions": [
+      {
+       "q": "How do you build a sense of pride in quality and delivery across your entire team?",
+       "probes": [
+        "What behaviours do you encourage to reinforce pride?",
+        "How do you ensure pride doesn’t slip during long or complex projects?"
+       ]
+      },
+      {
+       "q": "How do you recognise achievements meaningfully across different teams?",
+       "probes": [
+        "How do you ensure recognition is meaningful across different roles?",
+        "What role do you play in shaping the ‘story’ of your team’s achievements?",
+        "What outcomes reflect success for you?"
+       ]
+      },
+      {
+       "q": "How do you celebrate achievements in a way that motivates colleagues?",
+       "probes": [
+        "How do you make recognition meaningful across different roles?",
+        "What channels do you use to share success stories?",
+        "What impact have you seen from consistent recognition?"
+       ]
+      },
+      {
+       "q": "Share a time when you transformed the standard of delivery.",
+       "probes": [
+        "How did you identify what needed to be changed?",
+        "How did you ensure buy-in from your team?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Winners",
+     "desc": "We are hungry for success and want to be the best performing contractor for our clients, our people and our communities.",
+     "questions": [
+      {
+       "q": "Tell us about a time when your leadership improved performance across multiple teams.",
+       "probes": [
+        "What performance concerns did you identify?",
+        "How did you support your managers to drive improvements?",
+        "What measurable results were achieved?"
+       ]
+      },
+      {
+       "q": "How do you keep your team focused on delivering great performance?",
+       "probes": [
+        "What benchmarks or metrics do you track?",
+        "How do you prevent complacency?"
+       ]
+      },
+      {
+       "q": "Describe a time when you balanced pressure to deliver quickly while protecting quality and safety.",
+       "probes": [
+        "What was at stake and who was applying pressure?",
+        "How did you communicate boundaries and expectations?",
+        "What outcome demonstrated that you struck the right balance?"
+       ]
+      },
+      {
+       "q": "Tell us about a time when you reset performance thinking in your team.",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Hardworking",
+     "desc": "We all pull our weight and work hard for each other.",
+     "questions": [
+      {
+       "q": "How do you maintain high and sustainable performance during long periods under pressure?",
+       "probes": [
+        "How do you support managers to distribute workload fairly?",
+        "What early signs of burnout do you look for?",
+        "What long-term practices keep your team resilient?"
+       ]
+      },
+      {
+       "q": "Tell us about a time when you led your team through a challenging or resource-tight period.",
+       "probes": [
+        "What were the biggest challenges?",
+        "How did you support managers to remain resilient?",
+        "How did you maintain morale?"
+       ]
+      },
+      {
+       "q": "How do you spot early signs of burnout across teams?",
+       "probes": [
+        "What indicators do you monitor?",
+        "How do you support managers who may be struggling to support their teams?"
+       ]
+      },
+      {
+       "q": "What systemic changes have you made to improve long-term resilience?",
+       "probes": []
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "leader",
+   "label": "Leader",
+   "blurb": "For directors and senior leaders shaping strategy across the business.",
+   "behaviours": [
+    {
+     "name": "Safety Aware",
+     "desc": "Committed to continuously improve the physical and mental health safety and wellbeing of all colleagues.",
+     "questions": [
+      {
+       "q": "How do you ensure safety and wellbeing are embedded into your leadership decisions?",
+       "probes": []
+      },
+      {
+       "q": "What proactive steps have you taken to promote a culture of health and safety?",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a time you identified a risk to physical or mental wellbeing in your team.",
+       "probes": [
+        "What actions did you take?",
+        "What was the outcome?"
+       ]
+      },
+      {
+       "q": "How do you create a culture where people feel safe to raise concerns?",
+       "probes": []
+      },
+      {
+       "q": "If you were struggling with your own mental health or noticed a colleague struggling with their mental health, how would you approach it?",
+       "probes": []
+      },
+      {
+       "q": "Give us an example of a near miss that occurred under your leadership. What changes did you make as a result?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Credible",
+     "desc": "Grounded & approachable; no ego, open & self-aware. Takes responsibility for emotions and behaviours, committed to being best version of self.",
+     "questions": [
+      {
+       "q": "Tell us about a time when you had to acknowledge a personal mistake in a leadership role.",
+       "probes": []
+      },
+      {
+       "q": "How do you maintain approachability and openness while leading at a senior level?",
+       "probes": []
+      },
+      {
+       "q": "Describe a situation when you received feedback that challenged you. How did you respond and what did you do afterwards?",
+       "probes": []
+      },
+      {
+       "q": "How do you stay approachable when under pressure?",
+       "probes": []
+      },
+      {
+       "q": "What choices or habits enable you to bring the best version of yourself to work?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Engages & Motivates Others",
+     "desc": "Chooses appropriate communication to engage others in serving the company & shares information to enable them to do that effectively.",
+     "questions": [
+      {
+       "q": "How do you tailor your communication to engage different audiences across the business?",
+       "probes": []
+      },
+      {
+       "q": "Share an example of how you inspired your team to achieve a challenging goal.",
+       "probes": []
+      },
+      {
+       "q": "Describe a time when you had to re-energise a disengaged team or department.",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a time when you had to motivate colleagues through a challenging time or period of change.",
+       "probes": [
+        "What did you communicate and how?"
+       ]
+      },
+      {
+       "q": "Tell us about a time when you had to change the way you communicated.",
+       "probes": [
+        "How did you recognise this?",
+        "What did you do to change it?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Develops Others",
+     "desc": "Seeks out, nurtures & recognises talent, empowers others to be the best they can, practises coaching & provides opportunities for development.",
+     "questions": [
+      {
+       "q": "Describe your approach to coaching and mentoring future leaders.",
+       "probes": []
+      },
+      {
+       "q": "Describe a time when you helped someone realise their potential.",
+       "probes": [
+        "What did you do?",
+        "What impact did it have on them and the team?"
+       ]
+      },
+      {
+       "q": "How do you identify strengths and areas for development in others?",
+       "probes": []
+      },
+      {
+       "q": "How do you empower colleagues to be the best they can?",
+       "probes": []
+      },
+      {
+       "q": "How do you identify opportunities for development?",
+       "probes": [
+        "How do you act on them?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Inclusive",
+     "desc": "Recognises the value of diversity to the business, seeks, enables, promotes & uses the opinions and ideas of others.",
+     "questions": [
+      {
+       "q": "Describe a time when you actively promoted diversity and inclusion in your business area.",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a situation when inclusion led to a better business outcome.",
+       "probes": []
+      },
+      {
+       "q": "Describe how you built a culture of (safety and) inclusivity (on site) in a previous role.",
+       "probes": [
+        "What specific actions did you take?",
+        "How did people respond?"
+       ]
+      },
+      {
+       "q": "Give us an example of how you have created an inclusive environment where different voices can be heard and valued.",
+       "probes": []
+      },
+      {
+       "q": "How do you address behaviours that don't align with the culture?",
+       "probes": []
+      },
+      {
+       "q": "Can you share a specific example of a time when you realized a decision you were making was influenced by unconscious bias?",
+       "probes": [
+        "What action did you take to correct it?",
+        "What was the outcome?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Collaborative",
+     "desc": "Shows respect for & is interested in others, is open to & appreciates their contribution, seeks a win:win outcome and says what needs to be said, even if it’s difficult.",
+     "questions": [
+      {
+       "q": "How do you show your appreciation for colleagues' contributions?",
+       "probes": []
+      },
+      {
+       "q": "How do you foster a collaborative culture within your team?",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a time when you worked across teams to achieve a shared outcome.",
+       "probes": [
+        "What was your role?",
+        "What made the collaboration successful?"
+       ]
+      },
+      {
+       "q": "How do you handle conflict between stakeholders with competing interests?",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a time when you had a conflict with a colleague and had to give negative feedback.",
+       "probes": [
+        "How did you resolve it so that both of you were happy with the outcome?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Visionary/Pioneering",
+     "desc": "Looks and strives for a brighter future, willing to take risks and show courage to get there, willing to change the game.",
+     "questions": [
+      {
+       "q": "Tell us about a bold decision you made that changed the direction of the business.",
+       "probes": []
+      },
+      {
+       "q": "As a leader, how do you encourage innovation and forward thinking?",
+       "probes": []
+      },
+      {
+       "q": "Describe a time when you challenged the status quo.",
+       "probes": [
+        "What inspired you to push for change?",
+        "What was the outcome?"
+       ]
+      },
+      {
+       "q": "How do you inspire others to think more boldly?",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a time when you made a proposal that appeared risky but that would improve the business.",
+       "probes": [
+        "What was the outcome?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Thinks and Acts Commercially",
+     "desc": "Is interested in and understands the whole business & how well it serves the client, constantly strives to do business in an effective and efficient way.",
+     "questions": [
+      {
+       "q": "Describe a strategic decision you made that improved business efficiency or client satisfaction.",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a time when you identified a commercial opportunity that others overlooked.",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a decision you made that improved commercial performance or client value.",
+       "probes": [
+        "How did you evaluate the options?"
+       ]
+      },
+      {
+       "q": "How do you ensure that teams understand the commercial impact of their work?",
+       "probes": []
+      },
+      {
+       "q": "How do you approach the need to balance effectiveness and efficiency in a project?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Transformation Aware",
+     "desc": "Responsive to the need for change, can anticipate, adapt & evolve & will encourage others to do the same.",
+     "questions": [
+      {
+       "q": "Share an example of how you led your team/organisation through a major transformation.",
+       "probes": []
+      },
+      {
+       "q": "Describe a time when you had to adapt your leadership approach in response to change.",
+       "probes": []
+      },
+      {
+       "q": "How do you keep people engaged through uncertainly or periods of change?",
+       "probes": []
+      },
+      {
+       "q": "How do you prepare for a major business transformation and keep your team informed and motivated?",
+       "probes": []
+      },
+      {
+       "q": "How do you handle colleagues who resist change?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Impact Aware",
+     "desc": "Responsible custodian of the business, considers long-term success and impact on wider society.",
+     "questions": [
+      {
+       "q": "Describe how you evaluate the broader implications of your leadership decisions.",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a decision you made that considered the long-term impact on society or the environment.",
+       "probes": []
+      },
+      {
+       "q": "What does 'responsible leadership' mean to you?",
+       "probes": []
+      },
+      {
+       "q": "Describe a time when you stood by a decision that was right for the long term but unpopular in the moment.",
+       "probes": [
+        "How did you manage this?"
+       ]
+      },
+      {
+       "q": "How do you perceive long-term success?",
+       "probes": []
+      }
+     ]
+    }
+   ],
+   "values": [
+    {
+     "name": "Grounded",
+     "desc": "Everyone is equal at Story. We are down to earth and treat each other with respect.",
+     "questions": [
+      {
+       "q": "Describe a time when your position or seniority could have created a barrier.",
+       "probes": [
+        "What did you do to stay approachable and grounded?"
+       ]
+      },
+      {
+       "q": "Give us an example of how you have demonstrated humility and openness in a high-pressure or high-visibility situation.",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a time when you received feedback from someone more junior.",
+       "probes": [
+        "What did you learn from it?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Family",
+     "desc": "We nurture, train, develop and keep our people safe, just like a family. We are inclusive and do the right thing for the business and our people.",
+     "questions": [
+      {
+       "q": "Give us an example of when you created a safe, supportive environment, physically or psychologically, for your team.",
+       "probes": []
+      },
+      {
+       "q": "What do you do to ensure every team member feels included and part of 'the family' (especially new or remote colleagues)?",
+       "probes": []
+      },
+      {
+       "q": "Tell us about a time when you invested in someone's development to help them reach their potential.",
+       "probes": [
+        "What did you do?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Trusted",
+     "desc": "What we say is what we do. Our clients, our people and our communities trust us to do it right.",
+     "questions": [
+      {
+       "q": "Tell us about a time your integrity was tested.",
+       "probes": [
+        "How did you ensure you did the right thing?"
+       ]
+      },
+      {
+       "q": "How do you ensure transparency with stakeholders or clients when things don’t go to plan?",
+       "probes": []
+      },
+      {
+       "q": "Describe a situation when you needed to rebuild trust with a colleague, team or client.",
+       "probes": [
+        "What actions did you take?"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Proud",
+     "desc": "We are proud of our safety, our projects, our clients and the success we create together.",
+     "questions": [
+      {
+       "q": "As a leader, how do you instil a sense of pride and ownership in your team’s work?",
+       "probes": []
+      },
+      {
+       "q": "How do you celebrate success in a meaningful way that builds pride?",
+       "probes": []
+      },
+      {
+       "q": "Describe a time when you raised standards or expectations because you believed your team could achieve more.",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Winners",
+     "desc": "We are hungry for success and want to be the best performing contractor for our clients, our people and our communities.",
+     "questions": [
+      {
+       "q": "Describe a time when you turned around performance or delivered beyond expectations.",
+       "probes": [
+        "What made the difference?"
+       ]
+      },
+      {
+       "q": "Give us an example of when you demonstrated resilience and drive in the face of setbacks.",
+       "probes": []
+      },
+      {
+       "q": "How do you foster a competitive but healthy winning mindset in your team?",
+       "probes": []
+      }
+     ]
+    },
+    {
+     "name": "Hardworking",
+     "desc": "We all pull our weight and work hard for each other",
+     "questions": [
+      {
+       "q": "Tell us about a time when you had to sustain high levels of effort over a long period.",
+       "probes": [
+        "How did you stay motivated and keep others motivated?"
+       ]
+      },
+      {
+       "q": "Give us an example of how you recognise and appreciate hard work in your team.",
+       "probes": []
+      },
+      {
+       "q": "Describe a time when you had to roll your sleeves up and get hands on to support your team.",
+       "probes": []
+      }
+     ]
+    }
+   ]
+  }
+ ]
+};
+
+const $ = s => document.querySelector(s);
+const el = (t,c,h) => { const n=document.createElement(t); if(c)n.className=c; if(h!==undefined)n.innerHTML=h; return n; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+let level = null;
+const picked = new Map();   // key -> {kind, group, groupDesc, q, probes}
+const openGroups = new Set();
+
+/* Probes are follow-ups, not questions in their own right; always labelled as such. */
+function probeHTML(probes){
+  if(!probes || !probes.length) return '';
+  const label = probes.length===1 ? 'Probe if needed' : 'Probes if needed';
+  return '<div class="probeblock">'+
+           '<span class="probelabel">'+label+'</span>'+
+           '<ul class="probes">'+probes.map(p=>'<li>'+esc(p)+'</li>').join('')+'</ul>'+
+         '</div>';
+}
+
+const SCORE_KEY = [
+  ['1','No evidence'],['2','Limited evidence'],['3','Meets what we need'],
+  ['4','Strong evidence'],['5','Outstanding']
+];
+const REC_KEY = ['Appoint','Reserve','Do not appoint'];
+
+/* ---------- Step 1 ---------- */
+function renderLevels(){
+  const list = $('#levelList'); list.innerHTML='';
+  DATA.levels.forEach(l => {
+    const n = l.behaviours.reduce((a,g)=>a+g.questions.length,0) + l.values.reduce((a,g)=>a+g.questions.length,0);
+    const b = el('button','level-btn');
+    b.type='button';
+    b.innerHTML = '<span class="lv">'+esc(l.label)+'</span><span class="bl">'+esc(l.blurb)+'</span>'+
+                  '<span class="cnt">'+n+' questions to choose from &rarr;</span>';
+    b.addEventListener('click', ()=> chooseLevel(l.id));
+    list.appendChild(b);
+  });
+}
+
+function chooseLevel(id){
+  level = DATA.levels.find(l=>l.id===id);
+  picked.clear(); openGroups.clear();
+  openGroups.add('b0');
+  $('#lvlName').textContent = level.label;
+  $('#lvlBlurb').textContent = level.blurb + ' Tick the questions you want to ask. Open a section to see its questions.';
+  renderPanels();
+  switchTab('beh');
+  show(2);
+}
+
+/* ---------- Step 2 ---------- */
+function renderPanels(){
+  renderGroups($('#panel-beh'), level.behaviours, 'behaviour', 'b');
+  renderGroups($('#panel-val'), level.values, 'value', 'v');
+  updateTally();
+}
+
+function renderGroups(host, groups, kind, prefix){
+  host.innerHTML='';
+  groups.forEach((g, gi) => {
+    const gid = prefix+gi;
+    const wrap = el('div','group'+(kind==='value'?' is-values':'')+(openGroups.has(gid)?' open':''));
+    wrap.dataset.gid = gid;
+
+    const head = el('button','group-head');
+    head.type='button';
+    head.setAttribute('aria-expanded', openGroups.has(gid)?'true':'false');
+    head.setAttribute('aria-controls', gid+'-body');
+    head.innerHTML =
+      '<svg class="chev" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 5l7 7-7 7"/></svg>'+
+      '<span><span class="gname">'+esc(g.name)+'</span>'+(g.desc?'<span class="gdesc">'+esc(g.desc)+'</span>':'')+'</span>'+
+      '<span class="gcount" data-count>0 of '+g.questions.length+'</span>';
+    head.addEventListener('click', ()=>{
+      const open = wrap.classList.toggle('open');
+      head.setAttribute('aria-expanded', open?'true':'false');
+      open ? openGroups.add(gid) : openGroups.delete(gid);
+    });
+
+    const body = el('div','group-body'); body.id = gid+'-body';
+    const tools = el('div','group-tools');
+    const bAll = el('button','linkbtn','Select all in this section'); bAll.type='button';
+    const bNone = el('button','linkbtn','Clear this section'); bNone.type='button';
+    tools.appendChild(bAll); tools.appendChild(bNone);
+    body.appendChild(tools);
+
+    g.questions.forEach((q, qi) => {
+      const key = gid+'-'+qi;
+      const lab = el('label','q');
+      const cb = el('input'); cb.type='checkbox'; cb.id='cb-'+key;
+      cb.checked = picked.has(key);
+      if(cb.checked) lab.classList.add('checked');
+      lab.htmlFor = cb.id;
+      const txt = el('div','qt');
+      txt.innerHTML = '<span class="qmain">'+esc(q.q)+'</span>' + probeHTML(q.probes);
+      lab.appendChild(cb); lab.appendChild(txt);
+      cb.addEventListener('change', ()=>{
+        if(cb.checked) picked.set(key,{kind,group:g.name,groupDesc:g.desc,q:q.q,probes:q.probes,order:key});
+        else picked.delete(key);
+        lab.classList.toggle('checked', cb.checked);
+        updateCounts(); updateTally();
+      });
+      body.appendChild(lab);
+    });
+
+    bAll.addEventListener('click', ()=> body.querySelectorAll('input[type=checkbox]').forEach(c=>{ if(!c.checked){c.checked=true;c.dispatchEvent(new Event('change'));} }));
+    bNone.addEventListener('click', ()=> body.querySelectorAll('input[type=checkbox]').forEach(c=>{ if(c.checked){c.checked=false;c.dispatchEvent(new Event('change'));} }));
+
+    wrap.appendChild(head); wrap.appendChild(body); host.appendChild(wrap);
+  });
+  updateCounts();
+}
+
+function updateCounts(){
+  document.querySelectorAll('.group').forEach(w => {
+    const gid = w.dataset.gid;
+    const total = w.querySelectorAll('input[type=checkbox]').length;
+    const n = w.querySelectorAll('input[type=checkbox]:checked').length;
+    const badge = w.querySelector('[data-count]');
+    badge.textContent = n+' of '+total;
+    badge.classList.toggle('has', n>0);
+  });
+}
+
+function updateTally(){
+  const n = picked.size;
+  const nb = [...picked.values()].filter(p=>p.kind==='behaviour').length;
+  const nv = n-nb;
+  $('#pillBeh').textContent = nb;
+  $('#pillVal').textContent = nv;
+  const t = $('#tally');
+  t.childNodes[0].nodeValue = n===1 ? '1 question selected' : n+' questions selected';
+  const sub = $('#tallySub');
+  sub.textContent = n===0 ? 'Aim for 6–10 across a few different areas'
+    : n<6 ? 'A few more would give you a rounded picture (6–10 is about right)'
+    : n<=10 ? 'Good spread. That should fill about an hour'
+    : 'That’s a lot for one hour. Consider trimming a few';
+  $('#buildBtn').disabled = n===0;
+}
+
+/* ---------- Step 3 ---------- */
+function buildSheet(){
+  $('#sheetLevel').textContent = level.label;
+  const host = $('#sheetQs'); host.innerHTML='';
+  const order = ['behaviour','value'];
+  const items = [...picked.values()].sort((a,b)=>
+    order.indexOf(a.kind)-order.indexOf(b.kind) || a.order.localeCompare(b.order,'en',{numeric:true}));
+
+  items.forEach((p,i) => {
+    const b = el('div','qblock'+(p.kind==='value'?' is-values':''));
+    const scoreId = 'sc'+i;
+    b.innerHTML =
+      '<div class="qblock-head">'+
+        '<div class="tagrow">'+(p.kind==='value'?'Story Value':'Behaviour')+' &middot; '+esc(p.group)+' <span class="qnum">&nbsp;&nbsp;Q'+(i+1)+'</span></div>'+
+        '<div class="qtext">'+esc(p.q)+'</div>'+
+        probeHTML(p.probes)+
+      '</div>'+
+      '<div class="qblock-body">'+
+        '<div class="notes-label">Notes / evidence</div>'+
+        '<div class="notes" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Notes for question '+(i+1)+'" data-ph="Type here, or leave blank to write on the printed sheet&hellip;"></div>'+
+        '<div class="score">'+
+          '<span class="slabel">Score</span>'+
+          '<fieldset>'+
+            '<legend>Score for question '+(i+1)+'</legend>'+
+            SCORE_KEY.map(([v,l])=>
+              '<input type="radio" name="'+scoreId+'" id="'+scoreId+'-'+v+'" value="'+v+'">'+
+              '<label for="'+scoreId+'-'+v+'" title="'+v+': '+l+'"><span aria-hidden="true">'+v+'</span>'+
+              '<span class="vh">'+v+': '+l+'</span></label>').join('')+
+          '</fieldset>'+
+          '<span class="key">1 = no evidence &nbsp;&middot;&nbsp; 3 = meets what we need &nbsp;&middot;&nbsp; 5 = outstanding</span>'+
+        '</div>'+
+      '</div>';
+    host.appendChild(b);
+  });
+
+  const rec = $('#recSet');
+  rec.innerHTML = '<legend>Recommendation</legend>' + REC_KEY.map((r,i)=>
+    '<input type="radio" name="recommend" id="rec-'+i+'" value="'+esc(r)+'">'+
+    '<label for="rec-'+i+'" style="width:auto;border-radius:18px;padding:0 16px;font-size:.9rem">'+esc(r)+'</label>').join('');
+
+  show(3);
+}
+
+/* ---------- Navigation ---------- */
+function show(n){
+  [1,2,3].forEach(i=>{
+    $('#step'+i).classList.toggle('hidden', i!==n);
+    const s = $('#st'+i);
+    s.classList.toggle('done', i<n);
+    if(i===n) s.setAttribute('aria-current','step'); else s.removeAttribute('aria-current');
+  });
+  $('#actionbar').classList.toggle('hidden', n!==2);
+  $('#actionbar3').classList.toggle('hidden', n!==3);
+  window.scrollTo({top:0,behavior:'instant'});
+  const h = $('#step'+n).querySelector('h1');
+  if(h){ h.setAttribute('tabindex','-1'); h.focus({preventScroll:true}); }
+}
+
+function switchTab(which){
+  const beh = which==='beh';
+  $('#tab-beh').setAttribute('aria-selected', beh);
+  $('#tab-val').setAttribute('aria-selected', !beh);
+  $('#panel-beh').classList.toggle('hidden', !beh);
+  $('#panel-val').classList.toggle('hidden', beh);
+}
+
+/* ---------- Wire up ---------- */
+renderLevels();
+$('#tab-beh').addEventListener('click', ()=>switchTab('beh'));
+$('#tab-val').addEventListener('click', ()=>switchTab('val'));
+$('#changeLevel').addEventListener('click', ()=>{
+  if(picked.size && !confirm('Changing level will clear the questions you have picked. Continue?')) return;
+  picked.clear(); show(1);
+});
+$('#backToQs').addEventListener('click', ()=>show(2));
+$('#buildBtn').addEventListener('click', buildSheet);
+$('#printBtn').addEventListener('click', ()=>window.print());
+
+const SIZE_HINT = {
+  m:'About 5 lines per question when printed.',
+  l:'About 7 lines per question when printed.',
+  xl:'About 10 lines per question when printed. Best for writing by hand.'
+};
+function applyNotesSize(v){
+  $('#sheet').dataset.notes = v;
+  $('#sizeHint').textContent = SIZE_HINT[v];
+}
+$('#sizeSet').addEventListener('change', e => applyNotesSize(e.target.value));
+applyNotesSize('l');
+$('#clearAll').addEventListener('click', ()=>{
+  if(picked.size && !confirm('Clear all selected questions?')) return;
+  picked.clear(); renderPanels();
+});
+$('#startOver').addEventListener('click', ()=>{
+  if(!confirm('Start again? Any notes you have typed will be lost.')) return;
+  location.reload();
+});
+window.addEventListener('beforeunload', e => {
+  if($('#step3').classList.contains('hidden')) return;
+  const typed = [...document.querySelectorAll('.notes')].some(n=>n.textContent.trim()) ||
+                [...document.querySelectorAll('.fields input')].some(i=>i.value.trim());
+  if(typed){ e.preventDefault(); e.returnValue=''; }
+});
+</script>
+</body>
+</html>
