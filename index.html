@@ -44,6 +44,13 @@ p{margin:0 0 1em}
 .logo{height:34px;width:auto;display:block}
 .topbar .title{font-family:var(--head);font-weight:600;font-size:1.05rem;letter-spacing:.01em}
 .topbar .title span{display:block;font-family:var(--body);font-weight:normal;font-size:.8rem;opacity:.9}
+.soundbtn{margin-left:auto;display:inline-flex;align-items:center;gap:8px;font:inherit;font-family:var(--head);
+  font-weight:600;font-size:.85rem;color:var(--white);background:rgba(255,255,255,.12);
+  border:2px solid rgba(255,255,255,.55);border-radius:20px;padding:6px 14px;cursor:pointer}
+.soundbtn:hover{background:rgba(255,255,255,.24);border-color:var(--white)}
+.soundbtn .mute{opacity:0}
+.soundbtn[aria-pressed="false"] .wave1,.soundbtn[aria-pressed="false"] .wave2{opacity:0}
+.soundbtn[aria-pressed="false"] .mute{opacity:1}
 .wedge{height:14px;background:var(--blue);position:relative;overflow:hidden}
 .wedge::after{content:"";position:absolute;inset:0;background:#f2f4f6;clip-path:polygon(0 100%,100% 0,100% 100%)}
 
@@ -264,6 +271,15 @@ p{margin:0 0 1em}
     <div class="title">Interview Question Builder
       <span>Behaviours &amp; values based interviewing</span>
     </div>
+    <button type="button" class="soundbtn" id="soundBtn" aria-pressed="true">
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" width="18" height="18">
+        <path d="M4 9v6h4l5 4V5L8 9H4z"/>
+        <path class="wave1" d="M15.5 8.5a4.5 4.5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+        <path class="wave2" d="M18.2 6a8 8 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+        <path class="mute" d="M17 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span id="soundLabel">Sound on</span>
+    </button>
   </div>
 </header>
 <div class="wedge noprint" aria-hidden="true"></div>
@@ -2988,8 +3004,55 @@ const el = (t,c,h) => { const n=document.createElement(t); if(c)n.className=c; i
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 let level = null;
+let bulk = false;           // suppresses per-item sounds during select all / clear
 const picked = new Map();   // key -> {kind, group, groupDesc, q, probes}
 const openGroups = new Set();
+
+/* ---------- Click sounds ----------
+   Synthesised with the Web Audio API so the file stays self-contained (no audio
+   files to lose). Short, quiet, and switchable off from the header. */
+let soundOn = true, actx = null;
+
+function audio(){
+  if(!soundOn) return null;
+  try{
+    if(!actx){
+      const C = window.AudioContext || window.webkitAudioContext;
+      if(!C) return null;
+      actx = new C();
+    }
+    if(actx.state === 'suspended') actx.resume();
+    return actx;
+  }catch(e){ return null; }
+}
+
+/* One short tone with a sharp attack and exponential decay, so it reads as a
+   click rather than a beep. */
+function tone(freq, dur, vol, type, glideTo){
+  const ac = audio(); if(!ac) return;
+  const t = ac.currentTime;
+  const osc = ac.createOscillator(), gain = ac.createGain();
+  osc.type = type || 'triangle';
+  osc.frequency.setValueAtTime(freq, t);
+  if(glideTo) osc.frequency.exponentialRampToValueAtTime(glideTo, t + dur);
+  gain.gain.setValueAtTime(0.0001, t);
+  gain.gain.exponentialRampToValueAtTime(vol, t + 0.004);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  osc.connect(gain).connect(ac.destination);
+  osc.start(t); osc.stop(t + dur + 0.02);
+}
+
+const SFX = {
+  select:   () => tone(1500, 0.055, 0.075, 'triangle', 1900),
+  deselect: () => tone(760,  0.055, 0.055, 'triangle', 560),
+  level:    () => { tone(880, 0.07, 0.07, 'triangle'); setTimeout(()=>tone(1320,0.09,0.06,'triangle'),55); },
+  score:    () => tone(1150, 0.045, 0.06, 'sine', 1400),
+  build:    () => { tone(660,0.08,0.07,'triangle'); setTimeout(()=>tone(990,0.08,0.07,'triangle'),70);
+                    setTimeout(()=>tone(1320,0.13,0.06,'triangle'),140); },
+  clear:    () => tone(520, 0.1, 0.05, 'sine', 320),
+  toggle:   () => tone(1200, 0.05, 0.07, 'triangle')
+};
+function play(name){ if(soundOn && SFX[name]) SFX[name](); }
 
 /* Probes are follow-ups, not questions in their own right; always labelled as such. */
 function probeHTML(probes){
@@ -3016,7 +3079,7 @@ function renderLevels(){
     b.type='button';
     b.innerHTML = '<span class="lv">'+esc(l.label)+'</span><span class="bl">'+esc(l.blurb)+'</span>'+
                   '<span class="cnt">'+n+' questions to choose from &rarr;</span>';
-    b.addEventListener('click', ()=> chooseLevel(l.id));
+    b.addEventListener('click', ()=>{ play('level'); chooseLevel(l.id); });
     list.appendChild(b);
   });
 }
@@ -3082,12 +3145,22 @@ function renderGroups(host, groups, kind, prefix){
         else picked.delete(key);
         lab.classList.toggle('checked', cb.checked);
         updateCounts(); updateTally();
+        if(!bulk) play(cb.checked ? 'select' : 'deselect');
       });
       body.appendChild(lab);
     });
 
-    bAll.addEventListener('click', ()=> body.querySelectorAll('input[type=checkbox]').forEach(c=>{ if(!c.checked){c.checked=true;c.dispatchEvent(new Event('change'));} }));
-    bNone.addEventListener('click', ()=> body.querySelectorAll('input[type=checkbox]').forEach(c=>{ if(c.checked){c.checked=false;c.dispatchEvent(new Event('change'));} }));
+    /* Bulk actions play one sound, not one per question. */
+    bAll.addEventListener('click', ()=>{
+      bulk = true;
+      body.querySelectorAll('input[type=checkbox]').forEach(c=>{ if(!c.checked){c.checked=true;c.dispatchEvent(new Event('change'));} });
+      bulk = false; play('select');
+    });
+    bNone.addEventListener('click', ()=>{
+      bulk = true;
+      body.querySelectorAll('input[type=checkbox]').forEach(c=>{ if(c.checked){c.checked=false;c.dispatchEvent(new Event('change'));} });
+      bulk = false; play('clear');
+    });
 
     wrap.appendChild(head); wrap.appendChild(body); host.appendChild(wrap);
   });
@@ -3196,7 +3269,7 @@ $('#changeLevel').addEventListener('click', ()=>{
   picked.clear(); show(1);
 });
 $('#backToQs').addEventListener('click', ()=>show(2));
-$('#buildBtn').addEventListener('click', buildSheet);
+$('#buildBtn').addEventListener('click', ()=>{ play('build'); buildSheet(); });
 $('#printBtn').addEventListener('click', ()=>window.print());
 
 const SIZE_HINT = {
@@ -3212,7 +3285,22 @@ $('#sizeSet').addEventListener('change', e => applyNotesSize(e.target.value));
 applyNotesSize('l');
 $('#clearAll').addEventListener('click', ()=>{
   if(picked.size && !confirm('Clear all selected questions?')) return;
-  picked.clear(); renderPanels();
+  picked.clear(); renderPanels(); play('clear');
+});
+
+/* Scores and the notes-size picker are inside the generated sheet, so listen on it. */
+$('#sheet').addEventListener('change', e => {
+  if(e.target.matches('input[type=radio]')) play('score');
+});
+$('#sizeSet').addEventListener('change', ()=> play('score'));
+$('#tab-beh').addEventListener('click', ()=> play('score'));
+$('#tab-val').addEventListener('click', ()=> play('score'));
+
+$('#soundBtn').addEventListener('click', ()=>{
+  soundOn = !soundOn;
+  $('#soundBtn').setAttribute('aria-pressed', soundOn ? 'true' : 'false');
+  $('#soundLabel').textContent = soundOn ? 'Sound on' : 'Sound off';
+  if(soundOn) play('toggle');
 });
 $('#startOver').addEventListener('click', ()=>{
   if(!confirm('Start again? Any notes you have typed will be lost.')) return;
