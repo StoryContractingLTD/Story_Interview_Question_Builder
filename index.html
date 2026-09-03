@@ -139,6 +139,23 @@ p{margin:0 0 1em}
 .btn.ghost:hover{background:var(--blue-tint);color:var(--blue-dark)}
 .btn.small{padding:8px 14px;font-size:.9rem}
 
+/* ---------- Missing Story Value warning ---------- */
+.value-dialog{
+  width:min(92vw,520px);padding:0;border:0;border-top:6px solid var(--amber);
+  border-radius:var(--radius);box-shadow:0 18px 55px rgba(0,0,0,.3);color:var(--ink);
+}
+.value-dialog::backdrop{background:rgba(20,31,41,.68)}
+.value-dialog-in{padding:26px}
+.value-dialog-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:10px}
+.value-dialog-icon{
+  flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;
+  border-radius:50%;background:#fff3d6;color:#8a5e00;font-family:var(--head);font-weight:700;font-size:1.35rem;
+}
+.value-dialog h2{margin:3px 0 0;color:var(--blue-dark);font-size:1.25rem}
+.value-dialog p{margin:0 0 20px;color:var(--grey)}
+.value-dialog-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.value-dialog-actions .btn{width:auto}
+
 /* ---------- Notices ---------- */
 .note{background:var(--blue-tint);border-left:5px solid var(--blue);padding:14px 16px;border-radius:0 var(--radius) var(--radius) 0;margin:0 0 20px;font-size:.95rem}
 .note h3{font-size:1rem;margin-bottom:.3em;color:var(--blue-dark)}
@@ -225,6 +242,8 @@ p{margin:0 0 1em}
   .steps li{flex:1 1 100%}
   .actionbar-in{padding:10px 14px}
   .btn{flex:1 1 auto;text-align:center}
+  .value-dialog-actions{flex-direction:column-reverse}
+  .value-dialog-actions .btn{width:100%}
 }
 
 /* ---------- Print ---------- */
@@ -400,6 +419,21 @@ p{margin:0 0 1em}
     </div>
   </section>
 </main>
+
+<!-- ============ STORY VALUE WARNING ============ -->
+<dialog class="value-dialog noprint" id="valueWarning" aria-labelledby="valueWarningTitle" aria-describedby="valueWarningText">
+  <div class="value-dialog-in">
+    <div class="value-dialog-head">
+      <span class="value-dialog-icon" aria-hidden="true">!</span>
+      <h2 id="valueWarningTitle">Choose a Story Value question</h2>
+    </div>
+    <p id="valueWarningText">Your interview sheet needs at least one Story Value question. Choose one or more, then build the sheet again.</p>
+    <div class="value-dialog-actions">
+      <button type="button" class="btn ghost small" id="closeValueWarning">Not yet</button>
+      <button type="button" class="btn small" id="goToValues">Choose a Story Value question</button>
+    </div>
+  </div>
+</dialog>
 
 <!-- ============ ACTION BAR ============ -->
 <div class="actionbar noprint hidden" id="actionbar">
@@ -3049,6 +3083,7 @@ const SFX = {
   score:    () => tone(1150, 0.045, 0.06, 'sine', 1400),
   build:    () => { tone(660,0.08,0.07,'triangle'); setTimeout(()=>tone(990,0.08,0.07,'triangle'),70);
                     setTimeout(()=>tone(1320,0.13,0.06,'triangle'),140); },
+  warning:  () => { tone(520,0.12,0.075,'square',420); setTimeout(()=>tone(390,0.18,0.075,'square',330),125); },
   clear:    () => tone(520, 0.1, 0.05, 'sine', 320),
   toggle:   () => tone(1200, 0.05, 0.07, 'triangle')
 };
@@ -3260,6 +3295,32 @@ function switchTab(which){
   $('#panel-val').classList.toggle('hidden', beh);
 }
 
+function openValueWarning(){
+  const warning = $('#valueWarning');
+  if(typeof warning.showModal === 'function') warning.showModal();
+  else alert('Choose at least one Story Value question before building your interview sheet.');
+}
+
+function goToValueQuestions(){
+  const warning = $('#valueWarning');
+  if(warning.open) warning.close();
+  switchTab('val');
+
+  const firstGroup = $('#panel-val .group');
+  if(firstGroup){
+    firstGroup.classList.add('open');
+    openGroups.add(firstGroup.dataset.gid);
+    const head = firstGroup.querySelector('.group-head');
+    if(head) head.setAttribute('aria-expanded','true');
+  }
+
+  requestAnimationFrame(()=>{
+    $('#tab-val').scrollIntoView({behavior:'smooth',block:'start'});
+    const firstQuestion = $('#panel-val input[type=checkbox]:not(:checked)');
+    if(firstQuestion) firstQuestion.focus({preventScroll:true});
+  });
+}
+
 /* ---------- Wire up ---------- */
 renderLevels();
 $('#tab-beh').addEventListener('click', ()=>switchTab('beh'));
@@ -3269,7 +3330,18 @@ $('#changeLevel').addEventListener('click', ()=>{
   picked.clear(); show(1);
 });
 $('#backToQs').addEventListener('click', ()=>show(2));
-$('#buildBtn').addEventListener('click', ()=>{ play('build'); buildSheet(); });
+$('#buildBtn').addEventListener('click', ()=>{
+  const hasValueQuestion = [...picked.values()].some(p=>p.kind==='value');
+  if(!hasValueQuestion){
+    play('warning');
+    openValueWarning();
+    return;
+  }
+  play('build');
+  buildSheet();
+});
+$('#goToValues').addEventListener('click', goToValueQuestions);
+$('#closeValueWarning').addEventListener('click', ()=>$('#valueWarning').close());
 $('#printBtn').addEventListener('click', ()=>window.print());
 
 const SIZE_HINT = {
